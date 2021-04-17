@@ -1,24 +1,89 @@
 import os
 import discord
-import sanic
 from sanic.response import json
-from sanic import Sanic
-import requests
 from discord.ext import commands
-from discord.ext import tasks
-from fn import getClient
 import crayons
 import aiohttp
 import BenBotAsync
 import asyncio
 import fortnitepy
+from functools import partial
+
+
+email = 'email@email.com'
+password = 'password1'
+filename = 'device_auths.json'
+
+
+status = 'AtomicBot by AtomicXYZ'
+banner = "brseason01"
+banner_color = "defaultcolor15"
+platform = 'PSN'
+acceptFriend = True
+acceptInvite = True
+joinMessage = ''
+
+def getClient(authcode:str):
+    client = fortnitepy.Client(auth=fortnitepy.AdvancedAuth(),
+                               status=status,
+                               platform=fortnitepy.Platform(platform))
+    client.auth.authorization_code = authcode
+
+
+    def get_device_auth_details(self):
+        if os.path.isfile(filename):
+            with open(filename, 'r') as fp:
+                return json.load(fp)
+        return
+
+    def store_device_auth_details(self, email, details):
+        existing = self.get_device_auth_details()
+        existing[email] = details
+
+        with open(filename, 'w') as fp:
+            json.dump(existing, fp)
+
+    async def event_device_auth_generate(self, details, email):
+        self.store_device_auth_details(email, details)
+
+    @client.event
+    async def event_ready(self):
+        print(crayons.blue(f"Client ready as  + {self.user.display_name}"))
+        self.session = aiohttp.ClientSession()
+        self.session_event.set()
+        edit_and_keep_client_member()
+    
+    async def edit_and_keep_client_member():
+          member = client.party.me
+          try:
+            await member.edit_and_keep(
+              partial(member.set_outfit, asset='CID_253_Athena_Commando_M_MilitaryFashion2'),
+              partial(member.set_banner, icon="OtherBanner28", season_level=999),
+              partial(member.set_emote, asset='EID_Floss',run_for=20)
+            )
+          except:
+            print(crayons.red("Error Editing Styles"))
+            return
+
+    @client.event
+    async def event_friend_request(request):
+        try:
+          await request.accept()
+        except:
+          print(crayons.red("Friend Request Error"))
+    
+    @client.event
+    async def event_party_invite(invitation):
+        try:
+          await invitation.accept()
+        except:
+          print(crayons.red("Error Joining Party"))
+        await edit_and_keep_client_member()
+
+    return client
+
 
 loop = asyncio.get_event_loop()
-# app = sanic.Sanic("PirxcyPinger")
-
-# @app.route('/')
-# async def index(request):
-# 	return json({'bot': 'online'})
 
 prefix = 'a!'
 
@@ -28,11 +93,6 @@ footertext = "AtomicBot v0.2 by AtomicXYZ"
 intents = discord.Intents(messages=True, members=True)
 
 bot = commands.Bot(command_prefix=prefix, intents=intents)
-
-# url = f'https://{os.getenv("REPL_SLUG")}--{os.getenv("REPL_OWNER")}.repl.co'
-# url2 = f'https://{os.getenv("REPL_SLUG")}.{os.getenv("REPL_OWNER")}.repl.co'
-# requests.post('https://pinger.pirxcy.xyz/api/add', json={'url': url})
-# requests.post('https://pinger.pirxcy.xyz/api/add', json={'url': url2})
 
 bot.remove_command('help')
 
@@ -50,7 +110,6 @@ async def fetch_cosmetic(type_, name):
 async def on_ready():
   print('Logged in')
   await bot.change_presence(activity=discord.Game(name="made by AtomicXYZ"))
-  # await app.create_server(host="0.0.0.0",port=8000, return_asyncio_server=True)
   
 botlist = []
 currentbots = {}
