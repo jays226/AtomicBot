@@ -138,7 +138,7 @@ async def on_message(message):
     client = currentbots.get(message.author.id,None)
     split = args[1:]
     command = " ".join(split)
-    skinurl = client.party.me.outfit
+    skinurl = "-".join(split)
     if(args[0] == prefix + 'start'):
         await asyncio.sleep(5)
         embed=discord.Embed(
@@ -195,7 +195,7 @@ async def on_message(message):
             title=f" Bot Control Panel for {client.user.display_name}",
             description= "**Type " + prefix + "help for the list of commands!**", 
             color=color)
-          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{skinurl}/icon.png")
+          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-summit-striker-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
           embed.add_field(
             name="Friends", 
             value=f"{len(client.friends)}",
@@ -334,7 +334,7 @@ async def on_message(message):
             description=cosmetic.id,
             color=color
           )
-          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{skinurl}/icon.png")
+          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
           embed.set_author(name="AtomicBot")
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -374,7 +374,7 @@ async def on_message(message):
             description=member.outfit,
             color=color
           )
-          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{skinurl}/icon.png")
+          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
           embed.set_author(name="AtomicBot")
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -468,7 +468,7 @@ async def on_message(message):
             description="EID_Floss",
             color=color
             )
-            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{skinurl}/icon.png")
+            embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-emote.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
             embed.set_author(name="AtomicBot")
             embed.set_footer(text=footertext)
             await message.author.send(embed=embed)
@@ -483,7 +483,7 @@ async def on_message(message):
             description=cosmetic.id,
             color=color
             )
-            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{skinurl}/icon.png")
+            embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-emote.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
             embed.set_author(name="AtomicBot")
             embed.set_footer(text=footertext)
             await message.author.send(embed=embed)
@@ -513,7 +513,7 @@ async def on_message(message):
             description=cosmetic.id,
             color=color
           )
-          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{skinurl}/icon.png")
+          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-back-bling.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
           embed.set_author(name="AtomicBot")
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
