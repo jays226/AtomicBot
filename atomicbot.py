@@ -504,4 +504,4 @@ async def on_message(message):
       return
 
   
-bot.run('ODI5MDUwMjAxNjQ4OTIyNjQ1.YGyfKw.7nKU_gLRRJLFdGdoNVN0jKUk_NM')
+bot.run(os.environ['DISCORD_TOKEN'])
