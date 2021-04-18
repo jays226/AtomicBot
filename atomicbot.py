@@ -24,49 +24,54 @@ acceptInvite = True
 joinMessage = ''
 
 def getClient(authcode:str):
-    client = fortnitepy.Client(auth=fortnitepy.AdvancedAuth(),
-                               status=status,
-                               platform=fortnitepy.Platform(platform))
-    client.auth.authorization_code = authcode
+    try:
+      client = fortnitepy.Client(auth=fortnitepy.AdvancedAuth(
+        authorization_code=authcode),
+        status=status,
+        platform=fortnitepy.Platform(platform))
 
 
-    def get_device_auth_details(self):
-        if os.path.isfile(filename):
-            with open(filename, 'r') as fp:
-                return json.load(fp)
-        return
+      def get_device_auth_details(self):
+          if os.path.isfile(filename):
+              with open(filename, 'r') as fp:
+                  return json.load(fp)
+          return
 
-    def store_device_auth_details(self, email, details):
-        existing = self.get_device_auth_details()
-        existing[email] = details
+      def store_device_auth_details(self, email, details):
+          existing = self.get_device_auth_details()
+          existing[email] = details
 
-        with open(filename, 'w') as fp:
-            json.dump(existing, fp)
+          with open(filename, 'w') as fp:
+              json.dump(existing, fp)
 
-    async def event_device_auth_generate(self, details, email):
-        self.store_device_auth_details(email, details)
+      async def event_device_auth_generate(self, details, email):
+          self.store_device_auth_details(email, details)
 
-    @client.event
-    async def event_ready(self):
-        print(crayons.blue(f"Client ready as  + {self.user.display_name}"))
-        self.session = aiohttp.ClientSession()
-        self.session_event.set()
-        edit_and_keep_client_member()
-    
-    async def edit_and_keep_client_member():
-          member = client.party.me
-          try:
-            await member.edit_and_keep(
-              partial(member.set_outfit, asset='CID_253_Athena_Commando_M_MilitaryFashion2'),
-              partial(member.set_banner, icon="OtherBanner28", season_level=999),
-              partial(member.set_emote, asset='EID_Floss',run_for=20)
-            )
-          except:
-            print(crayons.red("Error Editing Styles"))
-            return
+      @client.event
+      async def event_ready(self):
+          print(crayons.blue(f"Client ready as  + {self.user.display_name}"))
+          self.session = aiohttp.ClientSession()
+          self.session_event.set()
+          edit_and_keep_client_member()
+      
+      async def edit_and_keep_client_member():
+            member = client.party.me
+            try:
+              await member.edit_and_keep(
+                partial(member.set_outfit, asset='CID_253_Athena_Commando_M_MilitaryFashion2'),
+                partial(member.set_banner, icon="OtherBanner28", season_level=999),
+                partial(member.set_emote, asset='EID_Floss',run_for=20)
+              )
+            except:
+              print(crayons.red("Error Editing Styles"))
+              return
+    except:
+      print(crayons.red("Invalid Auth Code"))
+      return
 
     @client.event
     async def event_friend_request(request):
+      if(acceptFriend):   
         try:
           await request.accept()
         except:
@@ -74,6 +79,7 @@ def getClient(authcode:str):
     
     @client.event
     async def event_party_invite(invitation):
+      if(acceptInvite): 
         try:
           await invitation.accept()
         except:
