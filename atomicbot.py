@@ -281,31 +281,26 @@ async def on_message(message):
           value="Equips the OG Purple Skull Trooper Skin",
           inline = True
         )
-      #   embed.add_field(
-      #   name=prefix + "hide",
-      #   value="Hides all of the users in the party",
-      #   inline = True
-      # )
-      embed.add_field(
-        name=prefix + "variant",
-        value="Sets the variant of the current skin",
-        inline = True
-      )
-      embed.add_field(
-        name=prefix + "ready",
-        value="Changes the bot's ready state to ready",
-        inline = True
-      )
-      embed.add_field(
-        name=prefix + "unready",
-        value="Changes the bot's ready state to unready",
-        inline = True
-      )
-      embed.add_field(
-        name=prefix + "privacy",
-        value="Sets the bot's party privacy to public, private, or friends",
-        inline = True
-      )
+        embed.add_field(
+          name=prefix + "variant",
+          value="Sets the variant of the current skin",
+          inline = True
+        )
+        embed.add_field(
+          name=prefix + "ready",
+          value="Changes the bot's ready state to ready",
+          inline = True
+        )
+        embed.add_field(
+          name=prefix + "unready",
+          value="Changes the bot's ready state to unready",
+          inline = True
+        )
+        embed.add_field(
+          name=prefix + "privacy",
+          value="Sets the bot's party privacy to public, private, or friends",
+          inline = True
+        )
         embed.set_author(name="AtomicBot")
         embed.set_footer(text=footertext)
         await message.author.send(embed=embed)
