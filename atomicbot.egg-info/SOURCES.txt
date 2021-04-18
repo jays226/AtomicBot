@@ -1,7 +1,0 @@
-atomicbot.py
-setup.py
-atomicbot.egg-info/PKG-INFO
-atomicbot.egg-info/SOURCES.txt
-atomicbot.egg-info/dependency_links.txt
-atomicbot.egg-info/requires.txt
-atomicbot.egg-info/top_level.txt
