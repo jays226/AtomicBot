@@ -281,26 +281,6 @@ async def on_message(message):
           value="Equips the OG Purple Skull Trooper Skin",
           inline = True
         )
-        embed.add_field(
-          name=prefix + "variant",
-          value="Sets the variant of the current skin",
-          inline = True
-        )
-        embed.add_field(
-          name=prefix + "ready",
-          value="Changes the bot's ready state to ready",
-          inline = True
-        )
-        embed.add_field(
-          name=prefix + "unready",
-          value="Changes the bot's ready state to unready",
-          inline = True
-        )
-        embed.add_field(
-          name=prefix + "privacy",
-          value="Sets the bot's party privacy to public, private, or friends",
-          inline = True
-        )
         embed.set_author(name="AtomicBot")
         embed.set_footer(text=footertext)
         await message.author.send(embed=embed)
@@ -330,7 +310,7 @@ async def on_message(message):
             variants = None
           )
           embed = discord.Embed(
-            title="Skin Successfully Changed to " + cosmetic.name,
+            title="Skin Successfully Changed to " + command.upper(),
             description=cosmetic.id,
             color=color
           )
@@ -349,47 +329,6 @@ async def on_message(message):
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
-      
-      if(args[0] == prefix + 'variant'):
-        member = client.party.me
-        try:
-          if(args[1] == "material"):
-            await member.set_outfit(
-              asset=member.outfit,
-              variants = member.create_variant(
-                material = int(args[2])
-              ) 
-            )
-
-          elif(args[1] == "clothing_color"):
-            await member.set_outfit(
-              asset=member.outfit,
-              variants = member.create_variant(
-                clothing_color = int(args[2])
-              ) 
-            )
-
-          embed = discord.Embed(
-            title="Variant Successfully Changed to " + cosmetic.name,
-            description=member.outfit,
-            color=color
-          )
-          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
-          embed.set_author(name="AtomicBot")
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Invalid Variant",
-            description="Make sure you type the name correctly!",
-            color=color
-          )
-          embed.set_author(name="AtomicBot")
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-      
       if(args[0] == prefix + 'pinkghoul'):
         member = client.party.me
         command = "ghoul trooper"
@@ -464,7 +403,7 @@ async def on_message(message):
               run_for=emoteseconds
             )
             embed = discord.Embed(
-            title="Emote Successfully Changed to " + cosmetic.name,
+            title="Emote Successfully Changed to " + command.upper(),
             description="EID_Floss",
             color=color
             )
@@ -479,7 +418,7 @@ async def on_message(message):
               run_for=emoteseconds
             )
             embed = discord.Embed(
-            title="Emote Successfully Changed to " + cosmetic.name,
+            title="Emote Successfully Changed to " + command.upper(),
             description=cosmetic.id,
             color=color
             )
@@ -509,7 +448,7 @@ async def on_message(message):
             variants = None
           )
           embed = discord.Embed(
-            title="Backpack Successfully Changed to " + cosmetic.name,
+            title="Backpack Successfully Changed to " + command.upper(),
             description=cosmetic.id,
             color=color
           )
@@ -553,103 +492,6 @@ async def on_message(message):
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
-      
-      if(args[0] == prefix + 'ready'):
-        member = client.party.me
-        try:
-          await member.set_ready(fortnitepy.ReadyState.READY)
-          embed = discord.Embed(
-            title="Bot set to Ready",
-            description="Ready State: Ready",
-            color=color
-          )
-          embed.set_author(name="AtomicBot")
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Incorrect Command",
-            description="Make sure the bot is not already in the ready state!",
-            color=color
-          )
-          embed.set_author(name="AtomicBot")
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-    
-      if(args[0] == prefix + 'unready'):
-        member = client.party.me
-        try:
-          await member.set_ready(fortnitepy.ReadyState.NOT_READY)
-          embed = discord.Embed(
-              title="Bot set to Not Ready",
-              description="Ready State: Not Ready",
-              color=color
-            )
-          embed.set_author(name="AtomicBot")
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Incorrect Command",
-            description="Make sure the bot is not already in the ready state!",
-            color=color
-          )
-          embed.set_author(name="AtomicBot")
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-      
-      if(args[0] == prefix + 'privacy'):
-        member = client.party
-        try:
-          if(member.leader):
-            if(args[1].upper() == "PRIVATE"):
-              await member.set_privacy(fortnitepy.PartyPrivacy.PRIVATE)
-              embed = discord.Embed(
-                title="Party Privacy Set to Private",
-                description="Privacy: Private",
-                color=color
-              )
-              embed.set_author(name="AtomicBot")
-              embed.set_footer(text=footertext)
-              await message.author.send(embed=embed)
-              return
-            elif(args[1].upper() == "PUBLIC"):
-              await member.set_privacy(fortnitepy.PartyPrivacy.PUBLIC)
-              embed = discord.Embed(
-                title="Party Privacy Set to Public",
-                description="Privacy: Public",
-                color=color
-              )
-              embed.set_author(name="AtomicBot")
-              embed.set_footer(text=footertext)
-              await message.author.send(embed=embed)
-              return
-            elif(args[1].upper() == "FRIENDS"):
-              await memberset_privacy(fortnitepy.PartyPrivacy.FRIENDS)
-              embed = discord.Embed(
-                title="Party Privacy Set to Friends Only",
-                description="Privacy: Friends",
-                color=color
-              )
-              embed.set_author(name="AtomicBot")
-              embed.set_footer(text=footertext)
-              await message.author.send(embed=embed)
-              return
-        except:
-          embed = discord.Embed(
-            title="Error: Incorrect Privacy",
-            description="Make sure the bot is party leader and you typed **private, public, or friends**!",
-            color=color
-          )
-          embed.set_author(name="AtomicBot")
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-   
     except: 
       embed = discord.Embed(
           title = "Error: Incorrect Command",
