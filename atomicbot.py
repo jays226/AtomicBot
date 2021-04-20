@@ -94,7 +94,7 @@ loop = asyncio.get_event_loop()
 prefix = 'a!'
 
 color = 0xff0000
-footertext = "AtomicBot v1.1 by AtomicXYZ"
+footertext = "AtomicBot v1.2 by AtomicXYZ"
 
 intents = discord.Intents(messages=True, members=True)
 
@@ -103,19 +103,37 @@ bot = commands.Bot(command_prefix=prefix, intents=intents)
 bot.remove_command('help')
 
 async def fetch_cosmetic(type_, name):
-    data = await BenBotAsync.get_cosmetic(
-            lang="en",
-            searchLang="en",
-            matchMethod="full",
-            name=name,
-            backendType=type_
-        )
+    try:
+      data = await BenBotAsync.get_cosmetic(
+              lang="en",
+              searchLang="en",
+              matchMethod="full",
+              name=name,
+              backendType=type_
+          )
+    except:
+      data = await BenBotAsync.get_cosmetic(
+              lang="en",
+              searchLang="en",
+              matchMethod="contains",
+              name=name,
+              backendType=type_
+          )
     return data
+
+async def status_task():
+    while True:
+        await bot.change_presence(activity=discord.Game(name="made by AtomicXYZ"))
+        await asyncio.sleep(10)
+        await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=str(len(bot.guilds)) + " Servers"))
+        await asyncio.sleep(10)
 
 @bot.event
 async def on_ready():
   print('Logged in')
-  await bot.change_presence(activity=discord.Game(name="made by AtomicXYZ"))
+  await status_task()
+  
+  
   
 botlist = []
 currentbots = {}
@@ -168,7 +186,10 @@ async def on_message(message):
         embed.set_footer(text=footertext)
 
         await message.author.send(embed=embed)
-        await message.delete()
+        try:
+          await message.delete()
+        except:
+          print()
 
         def check(m):
           return m.content and len(m.content) == 32 and m.author.id == message.author.id
@@ -246,7 +267,7 @@ async def on_message(message):
           description="Commands must be sent in DMs",
           color=color
         )
-        embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-summit-striker-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/829050201648922645/6e44b246d8fae2e087a2c6ea9a1cf325.png?size=128")
         embed.add_field(
           name=prefix + "stop",
           value="Cancels your bot",
@@ -335,7 +356,7 @@ async def on_message(message):
             description=cosmetic.id,
             color=color
           )
-          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
+          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
           embed.set_author(name="AtomicBot")
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -375,7 +396,7 @@ async def on_message(message):
             description=member.outfit,
             color=color
           )
-          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
+          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
           embed.set_author(name="AtomicBot")
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -503,7 +524,7 @@ async def on_message(message):
             description=cosmetic.id,
             color=color
           )
-          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-ghoul-trooper-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
+          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
           embed.set_author(name="AtomicBot")
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -535,7 +556,7 @@ async def on_message(message):
             description=cosmetic.id,
             color=color
           )
-          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-skull-trooper-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
+          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
           embed.set_author(name="AtomicBot")
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -659,5 +680,7 @@ async def on_message(message):
       await message.author.send(embed=embed)
       return
 
-  
+
+
 bot.run(os.environ['DISCORD_TOKEN'])
+
