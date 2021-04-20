@@ -94,7 +94,7 @@ loop = asyncio.get_event_loop()
 prefix = 'a!'
 
 color = 0xff0000
-footertext = "AtomicBot v1.0 by AtomicXYZ"
+footertext = "AtomicBot v1.1 by AtomicXYZ"
 
 intents = discord.Intents(messages=True, members=True)
 
@@ -168,6 +168,7 @@ async def on_message(message):
         embed.set_footer(text=footertext)
 
         await message.author.send(embed=embed)
+        await message.delete()
 
         def check(m):
           return m.content and len(m.content) == 32 and m.author.id == message.author.id
