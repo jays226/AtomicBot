@@ -158,6 +158,18 @@ async def on_message(message):
     command = " ".join(split)
     skinurl = "-".join(split)
     if(args[0] == prefix + 'start'):
+        
+        if(client):
+          embed=discord.Embed(
+          title="Error: Bot Currently Running",
+          description="Stop the bot with " + prefix + "stop", 
+          color=color)
+          embed.set_author(name="AtomicBot")
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
+
+        
         await asyncio.sleep(5)
         embed=discord.Embed(
         title="How to get an AtomicBot",
