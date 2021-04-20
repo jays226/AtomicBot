@@ -330,7 +330,7 @@ async def on_message(message):
             variants = None
           )
           embed = discord.Embed(
-            title="Skin Successfully Changed to " + command.upper(),
+            title="Skin Successfully Changed to " + cosmetic.name,
             description=cosmetic.id,
             color=color
           )
@@ -370,7 +370,7 @@ async def on_message(message):
             )
 
           embed = discord.Embed(
-            title="Variant Successfully Changed to " + command.upper(),
+            title="Variant Successfully Changed to " + cosmetic.name,
             description=member.outfit,
             color=color
           )
@@ -498,7 +498,7 @@ async def on_message(message):
             )
           )
           embed = discord.Embed(
-            title="Skin Successfully Changed to PINK GHOUL TROOPER",
+            title="Skin Successfully Changed to Pink Ghoul Trooper",
             description=cosmetic.id,
             color=color
           )
@@ -530,7 +530,7 @@ async def on_message(message):
             )
           )
           embed = discord.Embed(
-            title="Skin Successfully Changed to PURPLE SKULL TROOPER",
+            title="Skin Successfully Changed to Purple Skull Trooper",
             description=cosmetic.id,
             color=color
           )
@@ -560,7 +560,7 @@ async def on_message(message):
               run_for=emoteseconds
             )
             embed = discord.Embed(
-            title="Emote Successfully Changed to " + command.upper(),
+            title="Emote Successfully Changed to " + cosmetic.name,
             description="EID_Floss",
             color=color
             )
@@ -575,7 +575,7 @@ async def on_message(message):
               run_for=emoteseconds
             )
             embed = discord.Embed(
-            title="Emote Successfully Changed to " + command.upper(),
+            title="Emote Successfully Changed to " + cosmetic.name,
             description=cosmetic.id,
             color=color
             )
@@ -605,7 +605,7 @@ async def on_message(message):
             variants = None
           )
           embed = discord.Embed(
-            title="Backpack Successfully Changed to " + command.upper(),
+            title="Backpack Successfully Changed to " + cosmetic.name,
             description=cosmetic.id,
             color=color
           )
