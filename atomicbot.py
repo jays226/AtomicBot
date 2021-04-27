@@ -15,15 +15,17 @@ password = 'password1'
 filename = 'device_auths.json'
 
 
-status = 'AtomicBot by AtomicXYZ'
-banner = "brseason01"
-banner_color = "defaultcolor15"
-platform = 'PSN'
-acceptFriend = True
-acceptInvite = True
-joinMessage = ''
 
-def getClient(authcode:str):
+
+def getClient(authcode:str,premium:bool):
+    acceptFriend = True
+    acceptInvite = True
+    status = 'AtomicBot by AtomicXYZ'
+    banner = "brseason01"
+    banner_color = "defaultcolor15"
+    platform = 'PSN'
+    joinMessage = ''
+
     try:
       client = fortnitepy.Client(auth=fortnitepy.AdvancedAuth(
         authorization_code=authcode),
@@ -52,7 +54,7 @@ def getClient(authcode:str):
           self.session = aiohttp.ClientSession()
           self.session_event.set()
           edit_and_keep_client_member()
-      
+
       async def edit_and_keep_client_member():
             member = client.party.me
             try:
@@ -81,9 +83,9 @@ def getClient(authcode:str):
       if(acceptInvite): 
         try:
           await invitation.accept()
+          await edit_and_keep_client_member()
         except:
           print(crayons.red("Error Joining Party"))
-        await edit_and_keep_client_member()
 
     return client
 
@@ -93,7 +95,7 @@ loop = asyncio.get_event_loop()
 prefix = 'a!'
 
 color = 0xff0000
-footertext = "AtomicBot v1.3 by AtomicXYZ"
+footertext = "AtomicBot v1.4 by AtomicXYZ"
 
 intents = discord.Intents(messages=True, members=True)
 
@@ -120,6 +122,14 @@ async def fetch_cosmetic(type_, name):
           )
     return data
     
+
+botlist = []
+currentbots = {}
+savedbots = {}
+
+emoteseconds = 60
+expiretime = 30
+
 @bot.event
 async def on_ready():
   print('Logged in')
@@ -128,15 +138,13 @@ async def on_ready():
     await asyncio.sleep(10)
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=str(len(bot.guilds)) + " Servers"))
     await asyncio.sleep(10)
+    await bot.change_presence(activity=discord.Game(name="a!start to get a bot"))
+    await asyncio.sleep(10)
+    await bot.change_presence(activity=discord.Game(name=f"{len(currentbots)} bots online"))
+    await asyncio.sleep(10)
   
   
-  
-botlist = []
-currentbots = {}
-savedbots = {}
 
-emoteseconds = 60
-expiretime = 30
 
 @bot.event
 async def on_message(message):
@@ -154,7 +162,12 @@ async def on_message(message):
     command = " ".join(split)
     skinurl = "-".join(split)
     if(args[0] == prefix + 'start'):
-        
+        asyncio.sleep(1)
+        try:
+          await message.delete()
+        except:
+          print()
+
         if(client):
           embed=discord.Embed(
           title="Error: Bot Currently Running",
@@ -166,9 +179,9 @@ async def on_message(message):
           return
 
         
-        await asyncio.sleep(5)
+        await asyncio.sleep(4)
         embed=discord.Embed(
-        title="How to get an AtomicBot",
+        title="AtomicBot Control Panel",
         description="**Made by: AtomicXYZ**", 
         color=color)
         embed.set_author(name="AtomicBot")
@@ -180,35 +193,44 @@ async def on_message(message):
 
         embed.add_field(
           name="**Step 2**", 
-          value="Go to: https://www.epicgames.com/id/api/redirect?clientId=3446cd72694c4a4485d81b77adbb2141&responseType=code", inline=False)
+          value="[**Click Here**](https://www.epicgames.com/id/api/redirect?clientId=3446cd72694c4a4485d81b77adbb2141&responseType=code)", inline=False)
         
         embed.add_field(
           name="**Step 3**", 
-          value="Paste the code here \n(Ex: 31b4363830c54832be2164cf1b935321)", inline=False)
+          value="Paste the code from the website here\n(Refer to the image below for what to copy & paste)", inline=False)
+        
+        embed.set_image(url="https://media.discordapp.net/attachments/832266569815949352/836389927474298970/Screenshot-2021-04-26-195151.png")
         
         embed.add_field(
-          name="Type " + prefix + "stop to cancel", 
+          name="Type " + prefix + "cancel to cancel bot creation", 
           value="(You can create a new bot later with " + prefix + "start)", 
           inline=False)
 
         embed.set_footer(text=footertext)
 
         await message.author.send(embed=embed)
-        try:
-          await message.delete()
-        except:
-          print()
+        
 
         def check(msg):
-          return msg.content and len(msg.content) == 32 and msg.author.id == message.author.id
+          return ((msg.content and len(msg.content) == 32) or (msg.content and len(msg.content) == 8)) and msg.author.id == message.author.id
 
         msg = await bot.wait_for('message', check=check)
 
-        print("Bot Creation Started")
+        if(msg.content.lower() == prefix + "cancel"):
+          await asyncio.sleep(1)
+          embeddone = discord.Embed(
+            title=
+            "Bot Creation Cancelled!",
+            description=
+            "Start a new Bot by typing " + prefix + "start",
+            color=color)
+          await message.author.send(embed=embeddone)
+          return
         
-        client = getClient(msg.content)
-        
-        
+        else:
+          print("Bot Creation Started")
+          
+          client = getClient(msg.content,False)
         
         global step
         step = [
@@ -221,6 +243,7 @@ async def on_message(message):
           botlist.append(client)
           currentbots.update({message.author.id: client})
           print(crayons.green(f'Bot ready as {client.user.display_name}'))
+          await asyncio.sleep(2)
           embed = discord.Embed(
             title=f" Bot Control Panel for {client.user.display_name}",
             description= "**Type " + prefix + "help for the list of commands!**", 
@@ -241,6 +264,7 @@ async def on_message(message):
           embed.set_author(name="AtomicBot")
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
+          
 
           await asyncio.sleep(expiretime*60)
           await client.close(close_http=True,dispatch_close=True)
@@ -270,81 +294,124 @@ async def on_message(message):
 
     try:
       if(args[0] == prefix + 'help'):
-        embed = discord.Embed(
-          title=f"Help Page for {client.user.display_name}",
-          description="Commands must be sent in DMs",
-          color=color
-        )
-        embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/829050201648922645/6e44b246d8fae2e087a2c6ea9a1cf325.png?size=128")
-        embed.add_field(
-          name=prefix + "stop",
-          value="Cancels your bot",
+        if(client):
+          embed = discord.Embed(
+            title=f"Help Page for {client.user.display_name}",
+            description="Commands must be sent in DMs",
+            color=color
+          )
+          embed.add_field(
+            name=prefix + "stop",
+            value="Cancels your bot",
+            inline = True
+          )
+          embed.add_field(
+            name=prefix + "skin",
+            value="Changes the bot's skin",
+            inline = True
+          )
+          embed.add_field(
+            name=prefix + "emote",
+            value=f"Changes the bot's emote",
+            inline = True
+          )
+          embed.add_field(
+            name=prefix + "backpack",
+            value="Changes the bot's backpack/backling",
+            inline = True
+          )
+          embed.add_field(
+            name=prefix + "level",
+            value="Changes the bot's level",
+            inline = True
+          )
+          embed.add_field(
+            name=prefix + "pinkghoul",
+            value="Equips the OG Pink Ghoul Trooper Skin",
+            inline = True
+          )
+          embed.add_field(
+            name=prefix + "purpleskull",
+            value="Equips the OG Purple Skull Trooper Skin",
+            inline = True
+          )
+          embed.add_field(
+          name=prefix + "variant",
+          value="Sets the variant of the current skin",
           inline = True
-        )
-        embed.add_field(
-          name=prefix + "skin",
-          value="Changes the bot's skin",
-          inline = True
-        )
-        embed.add_field(
-          name=prefix + "emote",
-          value=f"Changes the bot's emote",
-          inline = True
-        )
-        embed.add_field(
-          name=prefix + "backpack",
-          value="Changes the bot's backpack/backling",
-          inline = True
-        )
-        embed.add_field(
-          name=prefix + "level",
-          value="Changes the bot's level",
-          inline = True
-        )
-        embed.add_field(
-          name=prefix + "pinkghoul",
-          value="Equips the OG Pink Ghoul Trooper Skin",
-          inline = True
-        )
-        embed.add_field(
-          name=prefix + "purpleskull",
-          value="Equips the OG Purple Skull Trooper Skin",
-          inline = True
-        )
-        embed.add_field(
-        name=prefix + "variant",
-        value="Sets the variant of the current skin",
-        inline = True
-        )
-        embed.add_field(
-          name=prefix + "ready",
-          value="Changes the bot's ready state to ready",
-          inline = True
-        )
-        embed.add_field(
-          name=prefix + "unready",
-          value="Changes the bot's ready state to unready",
-          inline = True
-        )
-        embed.add_field(
-          name=prefix + "privacy",
-          value="Changes the bot's party privacy",
-          inline = True
-        )
-        embed.add_field(
-          name=prefix + "sitout",
-          value="Makes the bot sit out",
-          inline = True
-        )
-        embed.add_field(
-          name=prefix + "invite",
-          value="Sends the bot's Discord Invite link",
-          inline = True
-        )
-        embed.set_author(name="AtomicBot")
-        embed.set_footer(text=footertext)
-        await message.author.send(embed=embed)
-        return
+          )
+          embed.add_field(
+            name=prefix + "ready",
+            value="Changes the bot's ready state to ready",
+            inline = True
+          )
+          embed.add_field(
+            name=prefix + "unready",
+            value="Changes the bot's ready state to unready",
+            inline = True
+          )
+          embed.add_field(
+            name=prefix + "privacy",
+            value="Changes the bot's party privacy",
+            inline = True
+          )
+          embed.add_field(
+            name=prefix + "sitout",
+            value="Makes the bot sit out",
+            inline = True
+          )
+          embed.add_field(
+            name=prefix + "sitin",
+            value="Makes the bot sit in",
+            inline = True
+          )
+          embed.add_field(
+            name=prefix + "invite",
+            value="Sends the bot's Discord Invite link",
+            inline = True
+          )
+          embed.add_field(
+            name=prefix + "help",
+            value="Sends this message",
+            inline = True
+          )
+          embed.set_author(name="AtomicBot")
+          embed.set_footer(text=footertext)
+          
+          await message.author.send(embed=embed)
+          return
+        else:
+          embed = discord.Embed(
+            title=f"AtomicBot Help Page",
+            description="Create a bot to see the full commands!",
+            color=color
+          )
+          embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/829050201648922645/6e44b246d8fae2e087a2c6ea9a1cf325.png?size=128")
+          embed.add_field(
+            name=prefix + "start",
+            value="Creates a bot",
+            inline = True
+          )
+          embed.add_field(
+            name=prefix + "stop",
+            value="Cancels your bot",
+            inline = True
+          )
+          embed.add_field(
+            name=prefix + "invite",
+            value="Sends the bot's Discord Invite link",
+            inline = True
+          )
+          embed.add_field(
+            name=prefix + "help",
+            value="sends this message",
+            inline = True
+          )
+          embed.set_author(name="AtomicBot")
+          embed.set_footer(text=footertext)
+          
+          await message.author.send(embed=embed)
+          return
     
       if(args[0] == prefix + 'stop'):
         await client.close(close_http=True,dispatch_close=True)
@@ -442,7 +509,7 @@ async def on_message(message):
           await message.author.send(embed=embed)
           return
       
-      if(args[0] == prefix + 'ready'):
+      if(args[0] == prefix + 'ready' or args[0] == prefix + "sitin"):
         member = client.party.me
         try:
           await member.set_ready(fortnitepy.ReadyState.READY)
@@ -734,4 +801,5 @@ async def on_message(message):
       await message.author.send(embed=embed)
       return
 
-bot.run(os.environ['DISCORD_TOKEN'])
+# bot.run(os.environ['DISCORD_TOKEN'])
+bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I')
