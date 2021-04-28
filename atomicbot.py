@@ -2,6 +2,8 @@ import os
 import discord
 import json
 from discord.ext import commands
+from fortnitepy.ext import commands as cmds
+from typing import Optional, Union, Any
 import crayons
 import aiohttp
 import BenBotAsync
@@ -53,8 +55,8 @@ def getClient(authcode:str,premium:bool):
           print(crayons.blue(f"Client ready as  + {self.user.display_name}"))
           self.session = aiohttp.ClientSession()
           self.session_event.set()
-          edit_and_keep_client_member()
-
+          await edit_and_keep_client_member()
+      
       async def edit_and_keep_client_member():
             member = client.party.me
             try:
@@ -66,9 +68,11 @@ def getClient(authcode:str,premium:bool):
             except:
               print(crayons.red("Error Editing Styles"))
               return
+
     except:
       print(crayons.red("Invalid Auth Code"))
       return
+    
 
     @client.event
     async def event_friend_request(request):
@@ -77,7 +81,7 @@ def getClient(authcode:str,premium:bool):
           await request.accept()
         except:
           print(crayons.red("Friend Request Error"))
-    
+
     @client.event
     async def event_party_invite(invitation):
       if(acceptInvite): 
@@ -86,6 +90,7 @@ def getClient(authcode:str,premium:bool):
           await edit_and_keep_client_member()
         except:
           print(crayons.red("Error Joining Party"))
+        
 
     return client
 
@@ -95,7 +100,7 @@ loop = asyncio.get_event_loop()
 prefix = 'a!'
 
 color = 0xff0000
-footertext = "AtomicBot v1.4 by AtomicXYZ"
+footertext = "AtomicBot v1.5 by AtomicXYZ"
 
 intents = discord.Intents(messages=True, members=True)
 
@@ -121,11 +126,20 @@ async def fetch_cosmetic(type_, name):
               backendType=type_
           )
     return data
-    
+
+async def set_and_update_member_prop(self, schema_key: str, new_value: Any) -> None:
+        prop = {schema_key: self.party.me.meta.set_prop(schema_key, new_value)}
+
+        await self.party.me.patch(updated=prop)
+
+async def set_and_update_party_prop(self, schema_key: str, new_value: Any) -> None:
+    prop = {schema_key: self.party.me.meta.set_prop(schema_key, new_value)}
+
+    await self.party.patch(updated=prop)
 
 botlist = []
 currentbots = {}
-savedbots = {}
+savedbots = {} # future idea of saving bots (cant be saved locally)
 
 emoteseconds = 60
 expiretime = 30
@@ -166,7 +180,7 @@ async def on_message(message):
         try:
           await message.delete()
         except:
-          print()
+          pass
 
         if(client):
           embed=discord.Embed(
@@ -212,7 +226,7 @@ async def on_message(message):
         
 
         def check(msg):
-          return ((msg.content and len(msg.content) == 32) or (msg.content and len(msg.content) == 8)) and msg.author.id == message.author.id
+          return (msg.content and (len(msg.content) == 32 or len(msg.content) == 8)) and msg.author.id == message.author.id
 
         msg = await bot.wait_for('message', check=check)
 
@@ -226,6 +240,7 @@ async def on_message(message):
             color=color)
           await message.author.send(embed=embeddone)
           return
+        
         
         else:
           print("Bot Creation Started")
@@ -253,9 +268,20 @@ async def on_message(message):
             name="Friends", 
             value=f"{len(client.friends)}",
             inline=True)
+          onlineFriends = []
+          offlineFriends = []
+          for i in client.friends:
+            if(i.is_online()):
+              onlineFriends.append(i)
+            else:
+              offlineFriends.append(i)
           embed.add_field(
-            name="Blocked Users", 
-            value=f"{len(client.blocked_users)}",
+            name="Online", 
+            value=f"{len(onlineFriends)}",
+            inline=True)
+          embed.add_field(
+            name="Offline", 
+            value=f"{len(offlineFriends)}",
             inline=True)
           embed.add_field(
             name=f"Your Bot will expire in {expiretime} min", 
@@ -326,6 +352,11 @@ async def on_message(message):
             inline = True
           )
           embed.add_field(
+            name=prefix + "hide",
+            value="Hides all of the players in the party",
+            inline = True
+          )
+          embed.add_field(
             name=prefix + "pinkghoul",
             value="Equips the OG Pink Ghoul Trooper Skin",
             inline = True
@@ -386,7 +417,7 @@ async def on_message(message):
             description="Create a bot to see the full commands!",
             color=color
           )
-          embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/829050201648922645/6e44b246d8fae2e087a2c6ea9a1cf325.png?size=128")
+          embed.set_thumbnail(url="https://media.discordapp.net/attachments/836446331992145950/836719691459461180/AtomicLogo.png")
           embed.add_field(
             name=prefix + "start",
             value="Creates a bot",
@@ -429,6 +460,30 @@ async def on_message(message):
         await message.author.send(embed=embeddone)
         return
       
+      if(args[0] == prefix + 'hide'):
+        try:
+          await set_and_update_party_prop(client,
+                'Default:RawSquadAssignments_j', {
+                    'RawSquadAssignments': [{'memberId': client.user.id, 'absoluteMemberIdx': 1}]
+                }
+            )
+          embed = discord.Embed(
+                title=
+                "Successfully Hidden all Party Members!",
+                description=
+                "Leave the party and rejoin to unhide everyone",
+                color=color)
+          await message.author.send(embed=embed)
+        except:
+          embed = discord.Embed(
+                title=
+                "Failed to Hide",
+                description=
+                "Make sure the bot is party leader!",
+                color=color)
+          await message.author.send(embed=embed)
+        return
+
       if(args[0] == prefix + 'invite'):
         embeddone = discord.Embed(
           title=
