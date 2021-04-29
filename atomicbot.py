@@ -100,7 +100,7 @@ loop = asyncio.get_event_loop()
 prefix = 'a!'
 
 color = 0xff0000
-footertext = "AtomicBot v1.5 by AtomicXYZ"
+footertext = "AtomicBot v1.6 by AtomicXYZ"
 
 intents = discord.Intents(messages=True, members=True)
 
@@ -143,6 +143,7 @@ savedbots = {} # future idea of saving bots (cant be saved locally)
 
 emoteseconds = 60
 expiretime = 30
+profileimg = "https://cdn.discordapp.com/avatars/829050201648922645/d8d62960d600af3975b61735ccc5e90c.png?size=128"
 
 @bot.event
 async def on_ready():
@@ -187,7 +188,7 @@ async def on_message(message):
           title="Error: Bot Currently Running",
           description="Stop the bot with " + prefix + "stop", 
           color=color)
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -198,7 +199,7 @@ async def on_message(message):
         title="AtomicBot Control Panel",
         description="**Made by: AtomicXYZ**", 
         color=color)
-        embed.set_author(name="AtomicBot")
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
         
         embed.add_field(
           name="**Step 1**", 
@@ -216,7 +217,7 @@ async def on_message(message):
         embed.set_image(url="https://media.discordapp.net/attachments/832266569815949352/836389927474298970/Screenshot-2021-04-26-195151.png")
         
         embed.add_field(
-          name="Type " + prefix + "cancel to cancel bot creation", 
+          name="**Type " + prefix + "cancel to cancel bot creation**", 
           value="(You can create a new bot later with " + prefix + "start)", 
           inline=False)
 
@@ -287,7 +288,7 @@ async def on_message(message):
             name=f"Your Bot will expire in {expiretime} min", 
             value="\nType " + prefix + "stop to stop your bot",
             inline=False)
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           
@@ -313,7 +314,7 @@ async def on_message(message):
             title="Bot was unable to start! (Most likely incorrect auth code)",
             description="You can create a new bot with " + prefix + "start",
             color=color)
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -327,86 +328,91 @@ async def on_message(message):
             color=color
           )
           embed.add_field(
-            name=prefix + "stop",
+            name="**" + prefix + "stop**",
             value="Cancels your bot",
             inline = True
           )
           embed.add_field(
-            name=prefix + "skin",
+            name="**" + prefix + "skin**",
             value="Changes the bot's skin",
             inline = True
           )
           embed.add_field(
-            name=prefix + "emote",
+            name="**" + prefix + "emote**",
             value=f"Changes the bot's emote",
             inline = True
           )
           embed.add_field(
-            name=prefix + "backpack",
+            name="**" + prefix + "backpack**",
             value="Changes the bot's backpack/backling",
             inline = True
           )
           embed.add_field(
-            name=prefix + "level",
+            name="**" + prefix + "level**",
             value="Changes the bot's level",
             inline = True
           )
           embed.add_field(
-            name=prefix + "hide",
+            name="**" + prefix + "hide**",
             value="Hides all of the players in the party",
             inline = True
           )
           embed.add_field(
-            name=prefix + "pinkghoul",
+            name="**" + prefix + "unhide**",
+            value="Unhides all of the players in the party",
+            inline = True
+          )
+          embed.add_field(
+            name="**" + prefix + "pinkghoul**",
             value="Equips the OG Pink Ghoul Trooper Skin",
             inline = True
           )
           embed.add_field(
-            name=prefix + "purpleskull",
+            name="**" + prefix + "purpleskull**",
             value="Equips the OG Purple Skull Trooper Skin",
             inline = True
           )
           embed.add_field(
-          name=prefix + "variant",
+          name="**" + prefix + "variant**",
           value="Sets the variant of the current skin",
           inline = True
           )
           embed.add_field(
-            name=prefix + "ready",
+            name="**" + prefix + "ready**",
             value="Changes the bot's ready state to ready",
             inline = True
           )
           embed.add_field(
-            name=prefix + "unready",
+            name="**" + prefix + "unready**",
             value="Changes the bot's ready state to unready",
             inline = True
           )
           embed.add_field(
-            name=prefix + "privacy",
+            name="**" + prefix + "privacy**",
             value="Changes the bot's party privacy",
             inline = True
           )
           embed.add_field(
-            name=prefix + "sitout",
+            name="**" + prefix + "sitout**",
             value="Makes the bot sit out",
             inline = True
           )
           embed.add_field(
-            name=prefix + "sitin",
+            name="**" + prefix + "sitin**",
             value="Makes the bot sit in",
             inline = True
           )
           embed.add_field(
-            name=prefix + "invite",
+            name="**" + prefix + "invite**",
             value="Sends the bot's Discord Invite link",
             inline = True
           )
           embed.add_field(
-            name=prefix + "help",
+            name="**" + prefix + "help**",
             value="Sends this message",
             inline = True
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           
           await message.author.send(embed=embed)
@@ -419,26 +425,26 @@ async def on_message(message):
           )
           embed.set_thumbnail(url="https://media.discordapp.net/attachments/836446331992145950/836719691459461180/AtomicLogo.png")
           embed.add_field(
-            name=prefix + "start",
+            name="**" + prefix + "start**",
             value="Creates a bot",
             inline = True
           )
           embed.add_field(
-            name=prefix + "stop",
+            name="**" + prefix + "stop**",
             value="Cancels your bot",
             inline = True
           )
           embed.add_field(
-            name=prefix + "invite",
+            name="**" + prefix + "invite**",
             value="Sends the bot's Discord Invite link",
             inline = True
           )
           embed.add_field(
-            name=prefix + "help",
+            name="**" + prefix + "help**",
             value="sends this message",
             inline = True
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           
           await message.author.send(embed=embed)
@@ -460,6 +466,16 @@ async def on_message(message):
         await message.author.send(embed=embeddone)
         return
       
+      if(args[0] == prefix + 'say'):
+        await client.party.send(command)
+        embed = discord.Embed(
+                title=
+                "Successfully sent the message!",
+                description=
+                "Message: " + command,
+                color=color)
+        await message.author.send(embed=embed)
+
       if(args[0] == prefix + 'hide'):
         try:
           await set_and_update_party_prop(client,
@@ -471,13 +487,26 @@ async def on_message(message):
                 title=
                 "Successfully Hidden all Party Members!",
                 description=
-                "Leave the party and rejoin to unhide everyone",
+                "To unhide, type " + prefix + " hide",
                 color=color)
           await message.author.send(embed=embed)
         except:
           embed = discord.Embed(
                 title=
                 "Failed to Hide",
+                description=
+                "Make sure the bot is party leader!",
+                color=color)
+          await message.author.send(embed=embed)
+        return
+      
+      if(args[0] == prefix + 'unhide'):
+        try:
+          await client.party.members[0].promote()
+        except:
+          embed = discord.Embed(
+                title=
+                "Failed to Unhide",
                 description=
                 "Make sure the bot is party leader!",
                 color=color)
@@ -509,7 +538,7 @@ async def on_message(message):
             color=color
           )
           embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -519,7 +548,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -549,7 +578,7 @@ async def on_message(message):
             color=color
           )
           embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -559,7 +588,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -573,7 +602,7 @@ async def on_message(message):
             description="Ready State: Ready",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -583,7 +612,7 @@ async def on_message(message):
             description="Make sure the bot is not already in the ready state!",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -597,7 +626,7 @@ async def on_message(message):
             description="Ready State: Sitting Out",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -607,7 +636,7 @@ async def on_message(message):
             description="Make sure the bot is not already in the sitting out state!",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -621,7 +650,7 @@ async def on_message(message):
               description="Ready State: Not Ready",
               color=color
             )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -631,7 +660,7 @@ async def on_message(message):
             description="Make sure the bot is not already in the ready state!",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -647,7 +676,7 @@ async def on_message(message):
                 description="Privacy: Private",
                 color=color
               )
-              embed.set_author(name="AtomicBot")
+              embed.set_author(name="AtomicBot",icon_url=profileimg)
               embed.set_footer(text=footertext)
               await message.author.send(embed=embed)
               return
@@ -658,7 +687,7 @@ async def on_message(message):
                 description="Privacy: Public",
                 color=color
               )
-              embed.set_author(name="AtomicBot")
+              embed.set_author(name="AtomicBot",icon_url=profileimg)
               embed.set_footer(text=footertext)
               await message.author.send(embed=embed)
               return
@@ -669,7 +698,7 @@ async def on_message(message):
                 description="Privacy: Friends",
                 color=color
               )
-              embed.set_author(name="AtomicBot")
+              embed.set_author(name="AtomicBot",icon_url=profileimg)
               embed.set_footer(text=footertext)
               await message.author.send(embed=embed)
               return
@@ -679,7 +708,7 @@ async def on_message(message):
             description="Make sure the bot is party leader and you typed **private, public, or friends**!",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -701,7 +730,7 @@ async def on_message(message):
             color=color
           )
           embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -711,7 +740,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -733,7 +762,7 @@ async def on_message(message):
             color=color
           )
           embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -743,7 +772,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -763,7 +792,7 @@ async def on_message(message):
             color=color
             )
             embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.emote}/icon.png")
-            embed.set_author(name="AtomicBot")
+            embed.set_author(name="AtomicBot",icon_url=profileimg)
             embed.set_footer(text=footertext)
             await message.author.send(embed=embed)
             return
@@ -778,7 +807,7 @@ async def on_message(message):
             color=color
             )
             embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
-            embed.set_author(name="AtomicBot")
+            embed.set_author(name="AtomicBot",icon_url=profileimg)
             embed.set_footer(text=footertext)
             await message.author.send(embed=embed)
             return
@@ -789,7 +818,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -808,7 +837,7 @@ async def on_message(message):
             color=color
           )
           embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.backpack}/icon.png")
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -818,7 +847,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -833,7 +862,7 @@ async def on_message(message):
             description = "Current Level: " + command,
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -843,7 +872,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
