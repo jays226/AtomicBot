@@ -75,21 +75,19 @@ def getClient(authcode:str,premium:bool):
     
 
     @client.event
-    async def event_friend_request(request):
-      if(acceptFriend):   
-        try:
-          await request.accept()
-        except:
-          print(crayons.red("Friend Request Error"))
+    async def event_friend_request(request): 
+      try:
+        await request.accept()
+      except:
+        print(crayons.red("Friend Request Error"))
 
     @client.event
     async def event_party_invite(invitation):
-      if(acceptInvite): 
-        try:
-          await invitation.accept()
-          await edit_and_keep_client_member()
-        except:
-          print(crayons.red("Error Joining Party"))
+      try:
+        await invitation.accept()
+        await edit_and_keep_client_member()
+      except (fortnitepy.errors.HTTPException):
+        print(crayons.red("Error Joining Party"))
         
 
     return client
@@ -388,6 +386,11 @@ async def on_message(message):
             inline = True
           )
           embed.add_field(
+            name="**" + prefix + "say**",
+            value="Sends a message from the bot in party chat",
+            inline = True
+          )
+          embed.add_field(
             name="**" + prefix + "privacy**",
             value="Changes the bot's party privacy",
             inline = True
@@ -487,7 +490,7 @@ async def on_message(message):
                 title=
                 "Successfully Hidden all Party Members!",
                 description=
-                "To unhide, type " + prefix + " hide",
+                "To unhide, type " + prefix + "unhide",
                 color=color)
           await message.author.send(embed=embed)
         except:
@@ -503,6 +506,13 @@ async def on_message(message):
       if(args[0] == prefix + 'unhide'):
         try:
           await client.party.members[0].promote()
+          embed = discord.Embed(
+                title=
+                "Unhid all members!",
+                description=
+                "To hide again, promote the bot to party leader and type " + prefix + "hide",
+                color=color)
+          await message.author.send(embed=embed)
         except:
           embed = discord.Embed(
                 title=
@@ -886,3 +896,4 @@ async def on_message(message):
       return
 
 bot.run(os.environ['DISCORD_TOKEN'])
+
