@@ -151,7 +151,7 @@ async def on_ready():
     await asyncio.sleep(10)
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=str(len(bot.guilds)) + " Servers"))
     await asyncio.sleep(10)
-    await bot.change_presence(activity=discord.Game(name="a!start to get a bot"))
+    await bot.change_presence(activity=discord.Game(name="a!help"))
     await asyncio.sleep(10)
     await bot.change_presence(activity=discord.Game(name=f"{len(currentbots)} bots online"))
     await asyncio.sleep(10)
@@ -175,7 +175,8 @@ async def on_message(message):
     command = " ".join(split)
     skinurl = "-".join(split)
     if(args[0] == prefix + 'start'):
-        asyncio.sleep(1)
+        global step
+        await asyncio.sleep(1)
         try:
           await message.delete()
         except:
@@ -184,11 +185,25 @@ async def on_message(message):
         if(client):
           embed=discord.Embed(
           title="Error: Bot Currently Running",
-          description="Stop the bot with " + prefix + "stop", 
+          description="The bot will now be closed", 
           color=color)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
+          await client.close(close_http=True,dispatch_close=True)
+          for i in step:
+              i.cancel()
+          botlist.remove(client)
+          del currentbots[message.author.id]
+          await client.wait_until_closed()
+          embed=discord.Embed(
+          title="Client Closed",
+          description="Start a new bot with "+prefix+"start", 
+          color=color)
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+
           return
 
         
@@ -246,7 +261,7 @@ async def on_message(message):
           
           client = getClient(msg.content,False)
         
-        global step
+        
         step = [
             bot.loop.create_task(client.start()),
             bot.loop.create_task(client.wait_until_ready())
@@ -257,7 +272,8 @@ async def on_message(message):
           botlist.append(client)
           currentbots.update({message.author.id: client})
           print(crayons.green(f'Bot ready as {client.user.display_name}'))
-          await asyncio.sleep(2)
+          await client.wait_until_ready()
+          await asyncio.sleep(1)
           embed = discord.Embed(
             title=f" Bot Control Panel for {client.user.display_name}",
             description= "**Type " + prefix + "help for the list of commands!**", 
@@ -288,8 +304,8 @@ async def on_message(message):
             inline=False)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
+
           await message.author.send(embed=embed)
-          
 
           await asyncio.sleep(expiretime*60)
           await client.close(close_http=True,dispatch_close=True)
@@ -454,18 +470,20 @@ async def on_message(message):
           return
     
       if(args[0] == prefix + 'stop'):
-        await client.close(close_http=True,dispatch_close=True)
+        if(client.is_ready() or client in botlist or client in currentbots):
+          await client.close(close_http=True,dispatch_close=True)
         for i in step:
           i.cancel()
+        await client.wait_until_closed()
         print(crayons.red(f"Bot cancelled {client.user.display_name}"))
         botlist.remove(client)
         del currentbots[message.author.id]
         embeddone = discord.Embed(
-                title=
-                "Bot Cancelled!",
-                description=
-                "Restart Bot by typing " + prefix + "start",
-                color=color)
+          title=
+          "Bot Cancelled!",
+          description=
+          "Restart Bot by typing " + prefix + "start",
+          color=color)
         await message.author.send(embed=embeddone)
         return
       
@@ -603,7 +621,7 @@ async def on_message(message):
           await message.author.send(embed=embed)
           return
       
-      if(args[0] == prefix + 'ready' or args[0] == prefix + "sitin"):
+      if(args[0] == prefix + 'ready'):
         member = client.party.me
         try:
           await member.set_ready(fortnitepy.ReadyState.READY)
@@ -651,7 +669,7 @@ async def on_message(message):
           await message.author.send(embed=embed)
           return
 
-      if(args[0] == prefix + 'unready'):
+      if(args[0] == prefix + 'unready' or args[0] == prefix + "sitin"):
         member = client.party.me
         try:
           await member.set_ready(fortnitepy.ReadyState.NOT_READY)
@@ -895,5 +913,6 @@ async def on_message(message):
       await message.author.send(embed=embed)
       return
 
-bot.run(os.environ['DISCORD_TOKEN'])
+# bot.run(os.environ['DISCORD_TOKEN'])
 
+bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I')
