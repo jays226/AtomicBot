@@ -486,91 +486,6 @@ async def on_message(message):
           color=color)
         await message.author.send(embed=embeddone)
         return
-      
-      if(args[0] == prefix + 'say'):
-        await client.party.send(command)
-        embed = discord.Embed(
-                title=
-                "Successfully sent the message!",
-                description=
-                "Message: " + command,
-                color=color)
-        await message.author.send(embed=embed)
-
-      if(args[0] == prefix + 'hide'):
-        try:
-          await set_and_update_party_prop(client,
-                'Default:RawSquadAssignments_j', {
-                    'RawSquadAssignments': [{'memberId': client.user.id, 'absoluteMemberIdx': 1}]
-                }
-            )
-          embed = discord.Embed(
-                title=
-                "Successfully Hidden all Party Members!",
-                description=
-                "To unhide, type " + prefix + "unhide",
-                color=color)
-          await message.author.send(embed=embed)
-        except:
-          embed = discord.Embed(
-                title=
-                "Failed to Hide",
-                description=
-                "Make sure the bot is party leader!",
-                color=color)
-          await message.author.send(embed=embed)
-        return
-      
-      if(args[0] == prefix + 'unhide'):
-        try:
-          await client.party.members[0].promote()
-          embed = discord.Embed(
-                title=
-                "Unhid all members!",
-                description=
-                "To hide again, promote the bot to party leader and type " + prefix + "hide",
-                color=color)
-          await message.author.send(embed=embed)
-        except:
-          embed = discord.Embed(
-                title=
-                "Failed to Unhide",
-                description=
-                "Make sure the bot is party leader!",
-                color=color)
-          await message.author.send(embed=embed)
-        return
-
-      if(args[0] == prefix + 'invite'):
-        embeddone = discord.Embed(
-          title=
-          "Click here to invite AtomicBot to your own Discord Server!",
-          url="https://discord.com/api/oauth2/authorize?client_id=829050201648922645&permissions=387136&scope=bot",
-          description=
-          "Use " + prefix + "start to get a bot!",
-          color=color)
-        await message.author.send(embed=embeddone)
-        return
-
-      if(args[0] == '!bots'):
-        for i in botlist:
-          print(i.user.display_name)
-          embeddone = discord.Embed(
-          title="Current Bots Running",
-          description=i.user.display_name,
-          color=color)
-        await message.author.send(embed=embeddone)
-        return
-
-      if(args[0] == '!remove'):
-        embeddone = discord.Embed(
-        title="Removed Bot From List",
-        description=botlist[int(args[1])],
-        color=color)
-        await message.author.send(embed=embeddone)
-        botlist.remove(int(args[1]))
-        return
-
       if(args[0] == prefix + 'skin'):
         cosmetic = await fetch_cosmetic('AthenaCharacter', command)
         member = client.party.me
@@ -924,6 +839,91 @@ async def on_message(message):
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
+    
+      if(args[0] == prefix + 'say'):
+        await client.party.send(command)
+        embed = discord.Embed(
+                title=
+                "Successfully sent the message!",
+                description=
+                "Message: " + command,
+                color=color)
+        await message.author.send(embed=embed)
+
+      if(args[0] == prefix + 'hide'):
+        try:
+          await set_and_update_party_prop(client,
+                'Default:RawSquadAssignments_j', {
+                    'RawSquadAssignments': [{'memberId': client.user.id, 'absoluteMemberIdx': 1}]
+                }
+            )
+          embed = discord.Embed(
+                title=
+                "Successfully Hidden all Party Members!",
+                description=
+                "To unhide, type " + prefix + "unhide",
+                color=color)
+          await message.author.send(embed=embed)
+        except:
+          embed = discord.Embed(
+                title=
+                "Failed to Hide",
+                description=
+                "Make sure the bot is party leader!",
+                color=color)
+          await message.author.send(embed=embed)
+        return
+      
+      if(args[0] == prefix + 'unhide'):
+        try:
+          await client.party.members[0].promote()
+          embed = discord.Embed(
+                title=
+                "Unhid all members!",
+                description=
+                "To hide again, promote the bot to party leader and type " + prefix + "hide",
+                color=color)
+          await message.author.send(embed=embed)
+        except:
+          embed = discord.Embed(
+                title=
+                "Failed to Unhide",
+                description=
+                "Make sure the bot is party leader!",
+                color=color)
+          await message.author.send(embed=embed)
+        return
+
+      if(args[0] == prefix + 'invite'):
+        embeddone = discord.Embed(
+          title=
+          "Click here to invite AtomicBot to your own Discord Server!",
+          url="https://discord.com/api/oauth2/authorize?client_id=829050201648922645&permissions=387136&scope=bot",
+          description=
+          "Use " + prefix + "start to get a bot!",
+          color=color)
+        await message.author.send(embed=embeddone)
+        return
+
+      if(args[0] == '!bots'):
+        for i in botlist:
+          print(i.user.display_name)
+          embeddone = discord.Embed(
+          title="Current Bots Running",
+          description=i.user.display_name,
+          color=color)
+        await message.author.send(embed=embeddone)
+        return
+
+      if(args[0] == '!remove'):
+        embeddone = discord.Embed(
+        title="Removed Bot From List",
+        description=botlist[int(args[1])],
+        color=color)
+        await message.author.send(embed=embeddone)
+        botlist.remove(int(args[1]))
+        return
+    
     except: 
       embed = discord.Embed(
           title = "Error: Incorrect Command",
@@ -932,6 +932,7 @@ async def on_message(message):
         )
       await message.author.send(embed=embed)
       return
+      
+      
 
 bot.run(os.environ['DISCORD_TOKEN'])
-
