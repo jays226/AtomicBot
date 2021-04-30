@@ -552,6 +552,25 @@ async def on_message(message):
         await message.author.send(embed=embeddone)
         return
 
+      if(args[0] == '!bots'):
+        for i in botlist:
+          print(i.user.display_name)
+          embeddone = discord.Embed(
+          title="Current Bots Running",
+          description=i.user.display_name,
+          color=color)
+        await message.author.send(embed=embeddone)
+        return
+
+      if(args[0] == '!remove'):
+        embeddone = discord.Embed(
+        title="Removed Bot From List",
+        description=botlist[int(args[1]))],
+        color=color)
+        await message.author.send(embed=embeddone)
+        botlist.remove(int(args[1])))
+        return
+
       if(args[0] == prefix + 'skin'):
         cosmetic = await fetch_cosmetic('AthenaCharacter', command)
         member = client.party.me
@@ -565,6 +584,7 @@ async def on_message(message):
             description=cosmetic.id,
             color=color
           )
+          await asyncio.sleep(1)
           embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
