@@ -565,10 +565,10 @@ async def on_message(message):
       if(args[0] == '!remove'):
         embeddone = discord.Embed(
         title="Removed Bot From List",
-        description=botlist[int(args[1]))],
+        description=botlist[int(args[1])],
         color=color)
         await message.author.send(embed=embeddone)
-        botlist.remove(int(args[1])))
+        botlist.remove(int(args[1]))
         return
 
       if(args[0] == prefix + 'skin'):
