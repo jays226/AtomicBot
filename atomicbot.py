@@ -908,5 +908,5 @@ async def on_message(message):
     #   return
       
       
-bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I')
-# bot.run(os.environ['DISCORD_TOKEN'])
+# bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I')
+bot.run(os.environ['DISCORD_TOKEN'])
