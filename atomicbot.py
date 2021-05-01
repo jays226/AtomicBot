@@ -11,13 +11,9 @@ import asyncio
 import fortnitepy
 from functools import partial
 
-
 email = 'email@email.com'
 password = 'password1'
 filename = 'device_auths.json'
-
-
-
 
 def getClient(authcode:str,premium:bool):
     acceptFriend = True
@@ -34,40 +30,30 @@ def getClient(authcode:str,premium:bool):
         status=status,
         platform=fortnitepy.Platform(platform))
 
-      def get_device_auth_details(self):
+      def get_device_auth_details():
           if os.path.isfile(filename):
               with open(filename, 'r') as fp:
                   return json.load(fp)
           return
 
-      def store_device_auth_details(self, email, details):
-          existing = self.get_device_auth_details()
+      def store_device_auth_details(email, details):
+          existing = client.get_device_auth_details()
           existing[email] = details
 
           with open(filename, 'w') as fp:
               json.dump(existing, fp)
 
-      async def event_device_auth_generate(self, details, email):
-          self.store_device_auth_details(email, details)
+      async def event_device_auth_generate(details, email):
+          client.store_device_auth_details(email, details)
 
-      @client.event
-      async def event_ready(self):
-          print(crayons.blue(f"Client ready as  + {self.user.display_name}"))
-          self.session = aiohttp.ClientSession()
-          self.session_event.set()
-          await edit_and_keep_client_member()
+      # @client.event
+      # async def event_ready():
+      #     print(crayons.blue(f"Client ready as  + {client.user.display_name}"))
+      #     client.session = aiohttp.ClientSession()
+      #     client.session_event.set()
+      #     await edit_and_keep_client_member()
       
-      async def edit_and_keep_client_member():
-            member = client.party.me
-            try:
-              await member.edit_and_keep(
-                partial(member.set_outfit, asset='CID_253_Athena_Commando_M_MilitaryFashion2'),
-                partial(member.set_banner, icon="OtherBanner28", season_level=999),
-                partial(member.set_emote, asset='EID_Floss',run_for=20)
-              )
-            except:
-              print(crayons.red("Error Editing Styles"))
-              return
+
 
     except:
       print(crayons.red("Invalid Auth Code"))
@@ -92,6 +78,17 @@ def getClient(authcode:str,premium:bool):
 
     return client
 
+async def edit_and_keep_client_member(self):
+      member = self.party.me
+      try:
+        await member.edit_and_keep(
+          partial(member.set_outfit, asset='CID_253_Athena_Commando_M_MilitaryFashion2'),
+          partial(member.set_banner, icon="OtherBanner28", season_level=999),
+          partial(member.set_emote, asset='EID_Floss',run_for=20)
+        )
+      except:
+        print(crayons.red("Error Editing Styles"))
+        return
 
 loop = asyncio.get_event_loop()
 
@@ -106,7 +103,7 @@ bot = commands.Bot(command_prefix=prefix, intents=intents)
 
 bot.remove_command('help')
 
-async def fetch_cosmetic(type_, name):
+async def fetch_cosmetic(type_, name) -> None:
     try:
       data = await BenBotAsync.get_cosmetic(
               lang="en",
@@ -135,8 +132,8 @@ async def set_and_update_party_prop(self, schema_key: str, new_value: Any) -> No
 
     await self.party.patch(updated=prop)
 
-botlist = []
 currentbots = {}
+botlist = []
 savedbots = {} # future idea of saving bots (cant be saved locally)
 
 emoteseconds = 60
@@ -190,12 +187,10 @@ async def on_message(message):
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
-          await client.close(close_http=True,dispatch_close=True)
           for i in step:
               i.cancel()
-          botlist.remove(client)
           del currentbots[message.author.id]
-          await client.wait_until_closed()
+          botlist.remove(client)
           embed=discord.Embed(
           title="Client Closed",
           description="Start a new bot with "+prefix+"start", 
@@ -269,8 +264,9 @@ async def on_message(message):
         complete, _ = await asyncio.wait(step, return_when=asyncio.FIRST_COMPLETED)
 
         if(step[1] in complete):
+          await edit_and_keep_client_member(client)
+          currentbots[message.author.id] = client
           botlist.append(client)
-          currentbots.update({message.author.id: client})
           print(crayons.green(f'Bot ready as {client.user.display_name}'))
           await client.wait_until_ready()
           await asyncio.sleep(1)
@@ -308,11 +304,10 @@ async def on_message(message):
           await message.author.send(embed=embed)
 
           await asyncio.sleep(expiretime*60)
-          await client.close(close_http=True,dispatch_close=True)
           for i in step:
               i.cancel()
-          botlist.remove(client)
           del currentbots[message.author.id]
+          botlist.remove(client)
           embeddone = discord.Embed(
             title=
             "Bot Time Expired!",
@@ -320,6 +315,7 @@ async def on_message(message):
             "Restart Bot by typing " + prefix + "start",
             color=color)
           await message.author.send(embed=embeddone)
+          print(f"Bot expired {client.user.display_name}")
           return
 
         else:
@@ -333,607 +329,584 @@ async def on_message(message):
           await message.author.send(embed=embed)
           return
 
-    try:
-      if(args[0] == prefix + 'help'):
-        if(client):
-          embed = discord.Embed(
-            title=f"Help Page for {client.user.display_name}",
-            description="Commands must be sent in DMs",
+    # try:
+    if(args[0] == prefix + 'help'):
+      if(client):
+        embed = discord.Embed(
+          title=f"Help Page for {client.user.display_name}",
+          description="Commands must be sent in DMs",
+          color=color
+        )
+        embed.add_field(
+          name="**" + prefix + "stop**",
+          value="Cancels your bot",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "skin**",
+          value="Changes the bot's skin",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "emote**",
+          value=f"Changes the bot's emote",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "backpack**",
+          value="Changes the bot's backpack/backling",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "level**",
+          value="Changes the bot's level",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "hide**",
+          value="Hides all of the players in the party",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "unhide**",
+          value="Unhides all of the players in the party",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "pinkghoul**",
+          value="Equips the OG Pink Ghoul Trooper Skin",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "purpleskull**",
+          value="Equips the OG Purple Skull Trooper Skin",
+          inline = True
+        )
+        embed.add_field(
+        name="**" + prefix + "variant**",
+        value="Sets the variant of the current skin",
+        inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "ready**",
+          value="Changes the bot's ready state to ready",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "unready**",
+          value="Changes the bot's ready state to unready",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "say**",
+          value="Sends a message from the bot in party chat",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "privacy**",
+          value="Changes the bot's party privacy",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "sitout**",
+          value="Makes the bot sit out",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "sitin**",
+          value="Makes the bot sit in",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "invite**",
+          value="Sends the bot's Discord Invite link",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "help**",
+          value="Sends this message",
+          inline = True
+        )
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        
+        await message.author.send(embed=embed)
+        return
+      else:
+        embed = discord.Embed(
+          title=f"AtomicBot Help Page",
+          description="Create a bot to see the full commands!",
+          color=color
+        )
+        embed.set_thumbnail(url="https://media.discordapp.net/attachments/836446331992145950/836719691459461180/AtomicLogo.png")
+        embed.add_field(
+          name="**" + prefix + "start**",
+          value="Creates a bot",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "stop**",
+          value="Cancels your bot",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "invite**",
+          value="Sends the bot's Discord Invite link",
+          inline = True
+        )
+        embed.add_field(
+          name="**" + prefix + "help**",
+          value="sends this message",
+          inline = True
+        )
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        
+        await message.author.send(embed=embed)
+        return
+  
+    if(args[0] == prefix + 'stop'):
+      for i in step:
+        i.cancel()
+      print(crayons.red(f"Bot cancelled {client.user.display_name}"))
+      del currentbots[message.author.id]
+      botlist.remove(client)
+      embeddone = discord.Embed(
+        title=
+        "Bot Cancelled!",
+        description=
+        "Restart Bot by typing " + prefix + "start",
+        color=color)
+      await message.author.send(embed=embeddone)
+      return
+    if(args[0] == prefix + 'skin'):
+      cosmetic = await fetch_cosmetic('AthenaCharacter', command)
+      member = client.party.me
+      try:
+        await member.set_outfit(
+          asset=cosmetic.id,
+          variants = None
+        )
+        embed = discord.Embed(
+          title="Skin Successfully Changed to " + cosmetic.name,
+          description=cosmetic.id,
+          color=color
+        )
+        await asyncio.sleep(1)
+        embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+      except:
+        embed = discord.Embed(
+          title="Error: Invalid Skin/ID",
+          description="Make sure you type the name correctly!",
+          color=color
+        )
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+    
+    if(args[0] == prefix + 'variant'):
+      member = client.party.me
+      try:
+        if(args[1] == "material"):
+          await member.set_outfit(
+            asset=member.outfit,
+            variants = member.create_variant(
+              material = int(args[2])
+            ) 
+          )
+
+        elif(args[1] == "clothing_color"):
+          await member.set_outfit(
+            asset=member.outfit,
+            variants = member.create_variant(
+              clothing_color = int(args[2])
+            ) 
+          )
+
+        embed = discord.Embed(
+          title="Variant Successfully Changed to " + cosmetic.name,
+          description=member.outfit,
+          color=color
+        )
+        # embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+      except:
+        embed = discord.Embed(
+          title="Error: Invalid Variant",
+          description="Make sure you type the name correctly!",
+          color=color
+        )
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+    
+    if(args[0] == prefix + 'ready'):
+      member = client.party.me
+      try:
+        await member.set_ready(fortnitepy.ReadyState.READY)
+        embed = discord.Embed(
+          title="Bot set to Ready",
+          description="Ready State: Ready",
+          color=color
+        )
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+      except:
+        embed = discord.Embed(
+          title="Error: Incorrect Command",
+          description="Make sure the bot is not already in the ready state!",
+          color=color
+        )
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+    
+    if(args[0] == prefix + 'sitout'):
+      member = client.party.me
+      try:
+        await member.set_ready(fortnitepy.ReadyState.SITTING_OUT)
+        embed = discord.Embed(
+          title="Bot set to Sitting Out",
+          description="Ready State: Sitting Out",
+          color=color
+        )
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+      except:
+        embed = discord.Embed(
+          title="Error: Incorrect Command",
+          description="Make sure the bot is not already in the sitting out state!",
+          color=color
+        )
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+
+    if(args[0] == prefix + 'unready' or args[0] == prefix + "sitin"):
+      member = client.party.me
+      try:
+        await member.set_ready(fortnitepy.ReadyState.NOT_READY)
+        embed = discord.Embed(
+            title="Bot set to Not Ready",
+            description="Ready State: Not Ready",
             color=color
           )
-          embed.add_field(
-            name="**" + prefix + "stop**",
-            value="Cancels your bot",
-            inline = True
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+      except:
+        embed = discord.Embed(
+          title="Error: Incorrect Command",
+          description="Make sure the bot is not already in the ready state!",
+          color=color
+        )
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+
+    if(args[0] == prefix + 'privacy'):
+      member = client.party
+      try:
+        if(member.leader):
+          if(args[1].upper() == "PRIVATE"):
+            await member.set_privacy(fortnitepy.PartyPrivacy.PRIVATE)
+            embed = discord.Embed(
+              title="Party Privacy Set to Private",
+              description="Privacy: Private",
+              color=color
+            )
+            embed.set_author(name="AtomicBot",icon_url=profileimg)
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+            return
+          elif(args[1].upper() == "PUBLIC"):
+            await member.set_privacy(fortnitepy.PartyPrivacy.PUBLIC)
+            embed = discord.Embed(
+              title="Party Privacy Set to Public",
+              description="Privacy: Public",
+              color=color
+            )
+            embed.set_author(name="AtomicBot",icon_url=profileimg)
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+            return
+          elif(args[1].upper() == "FRIENDS"):
+            await memberset_privacy(fortnitepy.PartyPrivacy.FRIENDS)
+            embed = discord.Embed(
+              title="Party Privacy Set to Friends Only",
+              description="Privacy: Friends",
+              color=color
+            )
+            embed.set_author(name="AtomicBot",icon_url=profileimg)
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+            return
+      except:
+        embed = discord.Embed(
+          title="Error: Incorrect Privacy",
+          description="Make sure the bot is party leader and you typed **private, public, or friends**!",
+          color=color
+        )
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+
+    if(args[0] == prefix + 'pinkghoul'):
+      member = client.party.me
+      command = "ghoul trooper"
+      cosmetic = await fetch_cosmetic('AthenaCharacter', command)
+      try:
+        await member.set_outfit(
+          asset=cosmetic.id,
+          variants = member.create_variant(
+            material=3
           )
-          embed.add_field(
-            name="**" + prefix + "skin**",
-            value="Changes the bot's skin",
-            inline = True
+        )
+        embed = discord.Embed(
+          title="Skin Successfully Changed to Pink Ghoul Trooper",
+          description=cosmetic.id,
+          color=color
+        )
+        embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-ghoul-trooper-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+      except:
+        embed = discord.Embed(
+          title="Error: Invalid Skin/ID",
+          description="Make sure you type the name correctly!",
+          color=color
+        )
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+      
+    if(args[0] == prefix + 'purpleskull'):
+      member = client.party.me
+      command = "skull trooper"
+      cosmetic = await fetch_cosmetic('AthenaCharacter', command)
+      try:
+        await member.set_outfit(
+          asset=cosmetic.id,
+          variants = member.create_variant(
+            clothing_color=1
           )
-          embed.add_field(
-            name="**" + prefix + "emote**",
-            value=f"Changes the bot's emote",
-            inline = True
+        )
+        embed = discord.Embed(
+          title="Skin Successfully Changed to Purple Skull Trooper",
+          description=cosmetic.id,
+          color=color
+        )
+        embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-skull-trooper-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+      except:
+        embed = discord.Embed(
+          title="Error: Invalid Skin/ID",
+          description="Make sure you type the name correctly!",
+          color=color
+        )
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+    
+    if(args[0] == prefix + 'emote'):
+      cosmetic = await fetch_cosmetic('AthenaDance', command)
+      member = client.party.me
+      try:
+        if(args[1].lower() == "floss"):
+          await member.set_emote(
+            asset="EID_Floss",
+            run_for=emoteseconds
           )
-          embed.add_field(
-            name="**" + prefix + "backpack**",
-            value="Changes the bot's backpack/backling",
-            inline = True
+          embed = discord.Embed(
+          title="Emote Successfully Changed to " + cosmetic.name,
+          description="EID_Floss",
+          color=color
           )
-          embed.add_field(
-            name="**" + prefix + "level**",
-            value="Changes the bot's level",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "hide**",
-            value="Hides all of the players in the party",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "unhide**",
-            value="Unhides all of the players in the party",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "pinkghoul**",
-            value="Equips the OG Pink Ghoul Trooper Skin",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "purpleskull**",
-            value="Equips the OG Purple Skull Trooper Skin",
-            inline = True
-          )
-          embed.add_field(
-          name="**" + prefix + "variant**",
-          value="Sets the variant of the current skin",
-          inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "ready**",
-            value="Changes the bot's ready state to ready",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "unready**",
-            value="Changes the bot's ready state to unready",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "say**",
-            value="Sends a message from the bot in party chat",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "privacy**",
-            value="Changes the bot's party privacy",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "sitout**",
-            value="Makes the bot sit out",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "sitin**",
-            value="Makes the bot sit in",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "invite**",
-            value="Sends the bot's Discord Invite link",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "help**",
-            value="Sends this message",
-            inline = True
-          )
+          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-emote.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
-          
           await message.author.send(embed=embed)
           return
         else:
-          embed = discord.Embed(
-            title=f"AtomicBot Help Page",
-            description="Create a bot to see the full commands!",
-            color=color
-          )
-          embed.set_thumbnail(url="https://media.discordapp.net/attachments/836446331992145950/836719691459461180/AtomicLogo.png")
-          embed.add_field(
-            name="**" + prefix + "start**",
-            value="Creates a bot",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "stop**",
-            value="Cancels your bot",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "invite**",
-            value="Sends the bot's Discord Invite link",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "help**",
-            value="sends this message",
-            inline = True
-          )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          
-          await message.author.send(embed=embed)
-          return
-    
-      if(args[0] == prefix + 'stop'):
-        if(client.is_ready() or client in botlist or client in currentbots):
-          await client.close(close_http=True,dispatch_close=True)
-        for i in step:
-          i.cancel()
-        await client.wait_until_closed()
-        print(crayons.red(f"Bot cancelled {client.user.display_name}"))
-        botlist.remove(client)
-        del currentbots[message.author.id]
-        embeddone = discord.Embed(
-          title=
-          "Bot Cancelled!",
-          description=
-          "Restart Bot by typing " + prefix + "start",
-          color=color)
-        await message.author.send(embed=embeddone)
-        return
-      if(args[0] == prefix + 'skin'):
-        cosmetic = await fetch_cosmetic('AthenaCharacter', command)
-        member = client.party.me
-        try:
-          await member.set_outfit(
+          await member.set_emote(
             asset=cosmetic.id,
-            variants = None
+            run_for=emoteseconds
           )
           embed = discord.Embed(
-            title="Skin Successfully Changed to " + cosmetic.name,
-            description=cosmetic.id,
-            color=color
+          title="Emote Successfully Changed to " + cosmetic.name,
+          description=cosmetic.id,
+          color=color
           )
-          await asyncio.sleep(1)
-          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Invalid Skin/ID",
-            description="Make sure you type the name correctly!",
-            color=color
-          )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-      
-      if(args[0] == prefix + 'variant'):
-        member = client.party.me
-        try:
-          if(args[1] == "material"):
-            await member.set_outfit(
-              asset=member.outfit,
-              variants = member.create_variant(
-                material = int(args[2])
-              ) 
-            )
-
-          elif(args[1] == "clothing_color"):
-            await member.set_outfit(
-              asset=member.outfit,
-              variants = member.create_variant(
-                clothing_color = int(args[2])
-              ) 
-            )
-
-          embed = discord.Embed(
-            title="Variant Successfully Changed to " + cosmetic.name,
-            description=member.outfit,
-            color=color
-          )
-          # embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Invalid Variant",
-            description="Make sure you type the name correctly!",
-            color=color
-          )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-      
-      if(args[0] == prefix + 'ready'):
-        member = client.party.me
-        try:
-          await member.set_ready(fortnitepy.ReadyState.READY)
-          embed = discord.Embed(
-            title="Bot set to Ready",
-            description="Ready State: Ready",
-            color=color
-          )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Incorrect Command",
-            description="Make sure the bot is not already in the ready state!",
-            color=color
-          )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-      
-      if(args[0] == prefix + 'sitout'):
-        member = client.party.me
-        try:
-          await member.set_ready(fortnitepy.ReadyState.SITTING_OUT)
-          embed = discord.Embed(
-            title="Bot set to Sitting Out",
-            description="Ready State: Sitting Out",
-            color=color
-          )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Incorrect Command",
-            description="Make sure the bot is not already in the sitting out state!",
-            color=color
-          )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-
-      if(args[0] == prefix + 'unready' or args[0] == prefix + "sitin"):
-        member = client.party.me
-        try:
-          await member.set_ready(fortnitepy.ReadyState.NOT_READY)
-          embed = discord.Embed(
-              title="Bot set to Not Ready",
-              description="Ready State: Not Ready",
-              color=color
-            )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Incorrect Command",
-            description="Make sure the bot is not already in the ready state!",
-            color=color
-          )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-
-      if(args[0] == prefix + 'privacy'):
-        member = client.party
-        try:
-          if(member.leader):
-            if(args[1].upper() == "PRIVATE"):
-              await member.set_privacy(fortnitepy.PartyPrivacy.PRIVATE)
-              embed = discord.Embed(
-                title="Party Privacy Set to Private",
-                description="Privacy: Private",
-                color=color
-              )
-              embed.set_author(name="AtomicBot",icon_url=profileimg)
-              embed.set_footer(text=footertext)
-              await message.author.send(embed=embed)
-              return
-            elif(args[1].upper() == "PUBLIC"):
-              await member.set_privacy(fortnitepy.PartyPrivacy.PUBLIC)
-              embed = discord.Embed(
-                title="Party Privacy Set to Public",
-                description="Privacy: Public",
-                color=color
-              )
-              embed.set_author(name="AtomicBot",icon_url=profileimg)
-              embed.set_footer(text=footertext)
-              await message.author.send(embed=embed)
-              return
-            elif(args[1].upper() == "FRIENDS"):
-              await memberset_privacy(fortnitepy.PartyPrivacy.FRIENDS)
-              embed = discord.Embed(
-                title="Party Privacy Set to Friends Only",
-                description="Privacy: Friends",
-                color=color
-              )
-              embed.set_author(name="AtomicBot",icon_url=profileimg)
-              embed.set_footer(text=footertext)
-              await message.author.send(embed=embed)
-              return
-        except:
-          embed = discord.Embed(
-            title="Error: Incorrect Privacy",
-            description="Make sure the bot is party leader and you typed **private, public, or friends**!",
-            color=color
-          )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-
-      if(args[0] == prefix + 'pinkghoul'):
-        member = client.party.me
-        command = "ghoul trooper"
-        cosmetic = await fetch_cosmetic('AthenaCharacter', command)
-        try:
-          await member.set_outfit(
-            asset=cosmetic.id,
-            variants = member.create_variant(
-              material=3
-            )
-          )
-          embed = discord.Embed(
-            title="Skin Successfully Changed to Pink Ghoul Trooper",
-            description=cosmetic.id,
-            color=color
-          )
-          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-ghoul-trooper-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Invalid Skin/ID",
-            description="Make sure you type the name correctly!",
-            color=color
-          )
+          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-emote.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
         
-      if(args[0] == prefix + 'purpleskull'):
-        member = client.party.me
-        command = "skull trooper"
-        cosmetic = await fetch_cosmetic('AthenaCharacter', command)
-        try:
-          await member.set_outfit(
-            asset=cosmetic.id,
-            variants = member.create_variant(
-              clothing_color=1
-            )
-          )
-          embed = discord.Embed(
-            title="Skin Successfully Changed to Purple Skull Trooper",
-            description=cosmetic.id,
-            color=color
-          )
-          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-skull-trooper-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Invalid Skin/ID",
-            description="Make sure you type the name correctly!",
-            color=color
-          )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-      
-      if(args[0] == prefix + 'emote'):
-        cosmetic = await fetch_cosmetic('AthenaDance', command)
-        member = client.party.me
-        try:
-          if(args[1].lower() == "floss"):
-            await member.set_emote(
-              asset="EID_Floss",
-              run_for=emoteseconds
-            )
-            embed = discord.Embed(
-            title="Emote Successfully Changed to " + cosmetic.name,
-            description="EID_Floss",
-            color=color
-            )
-            embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-emote.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
-            embed.set_author(name="AtomicBot",icon_url=profileimg)
-            embed.set_footer(text=footertext)
-            await message.author.send(embed=embed)
-            return
-          else:
-            await member.set_emote(
-              asset=cosmetic.id,
-              run_for=emoteseconds
-            )
-            embed = discord.Embed(
-            title="Emote Successfully Changed to " + cosmetic.name,
-            description=cosmetic.id,
-            color=color
-            )
-            embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-emote.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
-            embed.set_author(name="AtomicBot",icon_url=profileimg)
-            embed.set_footer(text=footertext)
-            await message.author.send(embed=embed)
-            return
-          
-        except:
-          embed = discord.Embed(
-            title="Error: Invalid Emote/ID",
-            description="Make sure you type the name correctly!",
-            color=color
-          )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-      
-      if(args[0] == prefix + 'backpack'):
-        cosmetic = await fetch_cosmetic('AthenaBackpack', command)
-        member = client.party.me
-        try:
-          await member.set_backpack(
-            asset=cosmetic.id,
-            variants = None
-          )
-          embed = discord.Embed(
-            title="Backpack Successfully Changed to " + cosmetic.name,
-            description=cosmetic.id,
-            color=color
-          )
-          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-back-bling.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Invalid Backpack",
-            description="Make sure you type the name correctly!",
-            color=color
-          )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-      
-      if(args[0] == prefix + 'level'):
-        member = client.party.me
-        banner_ico = member.banner[0]
-        try:
-          await member.set_banner(icon=banner_ico, season_level=int(command))
-          embed = discord.Embed(
-            title= "Level Successfully Changed to " + command,
-            description = "Current Level: " + command,
-            color=color
-          )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Invalid Level",
-            description="Make sure you type the name correctly!",
-            color=color
-          )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-    
-      if(args[0] == prefix + 'say'):
-        await client.party.send(command)
+      except:
         embed = discord.Embed(
-                title=
-                "Successfully sent the message!",
-                description=
-                "Message: " + command,
-                color=color)
-        await message.author.send(embed=embed)
-
-      if(args[0] == prefix + 'hide'):
-        try:
-          await set_and_update_party_prop(client,
-                'Default:RawSquadAssignments_j', {
-                    'RawSquadAssignments': [{'memberId': client.user.id, 'absoluteMemberIdx': 1}]
-                }
-            )
-          embed = discord.Embed(
-                title=
-                "Successfully Hidden all Party Members!",
-                description=
-                "To unhide, type " + prefix + "unhide",
-                color=color)
-          await message.author.send(embed=embed)
-        except:
-          embed = discord.Embed(
-                title=
-                "Failed to Hide",
-                description=
-                "Make sure the bot is party leader!",
-                color=color)
-          await message.author.send(embed=embed)
-        return
-      
-      if(args[0] == prefix + 'unhide'):
-        try:
-          await client.party.members[0].promote()
-          embed = discord.Embed(
-                title=
-                "Unhid all members!",
-                description=
-                "To hide again, promote the bot to party leader and type " + prefix + "hide",
-                color=color)
-          await message.author.send(embed=embed)
-        except:
-          embed = discord.Embed(
-                title=
-                "Failed to Unhide",
-                description=
-                "Make sure the bot is party leader!",
-                color=color)
-          await message.author.send(embed=embed)
-        return
-
-      if(args[0] == prefix + 'invite'):
-        embeddone = discord.Embed(
-          title=
-          "Click here to invite AtomicBot to your own Discord Server!",
-          url="https://discord.com/api/oauth2/authorize?client_id=829050201648922645&permissions=387136&scope=bot",
-          description=
-          "Use " + prefix + "start to get a bot!",
-          color=color)
-        await message.author.send(embed=embeddone)
-        return
-
-      if(args[0] == '!bots'):
-        for i in botlist:
-          print(i.user.display_name)
-          embeddone = discord.Embed(
-          title="Current Bots Running",
-          description=i.user.display_name,
-          color=color)
-          await message.author.send(embed=embeddone)
-          await asyncio.sleep(1)
-        return
-
-      if(args[0] == '!remove'):
-        embeddone = discord.Embed(
-        title="Removed Bot From List",
-        description=botlist[int(args[1])],
-        color=color)
-        await message.author.send(embed=embeddone)
-        botlist.remove(int(args[1]))
-        return
-    
-    except: 
-      embed = discord.Embed(
-          title = "Error: Incorrect Command",
-          description = "Make a bot by typing " + prefix + "start",
+          title="Error: Invalid Emote/ID",
+          description="Make sure you type the name correctly!",
           color=color
         )
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+    
+    if(args[0] == prefix + 'backpack'):
+      cosmetic = await fetch_cosmetic('AthenaBackpack', command)
+      member = client.party.me
+      try:
+        await member.set_backpack(
+          asset=cosmetic.id,
+          variants = None
+        )
+        embed = discord.Embed(
+          title="Backpack Successfully Changed to " + cosmetic.name,
+          description=cosmetic.id,
+          color=color
+        )
+        embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-back-bling.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+      except:
+        embed = discord.Embed(
+          title="Error: Invalid Backpack",
+          description="Make sure you type the name correctly!",
+          color=color
+        )
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+    
+    if(args[0] == prefix + 'level'):
+      member = client.party.me
+      banner_ico = member.banner[0]
+      try:
+        await member.set_banner(icon=banner_ico, season_level=int(command))
+        embed = discord.Embed(
+          title= "Level Successfully Changed to " + command,
+          description = "Current Level: " + command,
+          color=color
+        )
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+      except:
+        embed = discord.Embed(
+          title="Error: Invalid Level",
+          description="Make sure you type the name correctly!",
+          color=color
+        )
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.author.send(embed=embed)
+        return
+  
+    if(args[0] == prefix + 'say'):
+      await client.party.send(command)
+      embed = discord.Embed(
+              title=
+              "Successfully sent the message!",
+              description=
+              "Message: " + command,
+              color=color)
       await message.author.send(embed=embed)
-      return
-      
-      
 
-bot.run(os.environ['DISCORD_TOKEN'])
+    if(args[0] == prefix + 'hide'):
+      try:
+        await set_and_update_party_prop(client,
+              'Default:RawSquadAssignments_j', {
+                  'RawSquadAssignments': [{'memberId': client.user.id, 'absoluteMemberIdx': 1}]
+              }
+          )
+        embed = discord.Embed(
+              title=
+              "Successfully Hidden all Party Members!",
+              description=
+              "To unhide, type " + prefix + "unhide",
+              color=color)
+        await message.author.send(embed=embed)
+      except:
+        embed = discord.Embed(
+              title=
+              "Failed to Hide",
+              description=
+              "Make sure the bot is party leader!",
+              color=color)
+        await message.author.send(embed=embed)
+      return
+    
+    if(args[0] == prefix + 'unhide'):
+      try:
+        await client.party.members[0].promote()
+        embed = discord.Embed(
+              title=
+              "Unhid all members!",
+              description=
+              "To hide again, promote the bot to party leader and type " + prefix + "hide",
+              color=color)
+        await message.author.send(embed=embed)
+      except:
+        embed = discord.Embed(
+              title=
+              "Failed to Unhide",
+              description=
+              "Make sure the bot is party leader!",
+              color=color)
+        await message.author.send(embed=embed)
+      return
+
+    if(args[0] == prefix + 'invite'):
+      embeddone = discord.Embed(
+        title=
+        "Click here to invite AtomicBot to your own Discord Server!",
+        url="https://discord.com/api/oauth2/authorize?client_id=829050201648922645&permissions=387136&scope=bot",
+        description=
+        "Use " + prefix + "start to get a bot!",
+        color=color)
+      await message.author.send(embed=embeddone)
+      return
+    
+    # except: 
+    #   embed = discord.Embed(
+    #       title = "Error: Incorrect Command",
+    #       description = "Make a bot by typing " + prefix + "start",
+    #       color=color
+    #     )
+    #   await message.author.send(embed=embed)
+    #   return
+      
+      
+bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I')
+# bot.run(os.environ['DISCORD_TOKEN'])
