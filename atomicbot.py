@@ -135,7 +135,7 @@ async def set_and_update_party_prop(self, schema_key: str, new_value: Any) -> No
     await self.party.patch(updated=prop)
 
 currentbots = {}
-botlist = []
+# botlist = []
 savedbots = {} # future idea of saving bots (cant be saved locally)
 
 emoteseconds = 60
@@ -252,7 +252,6 @@ async def on_message(message):
 
         if(step[1] in complete):
           currentbots[message.author.id] = client
-          botlist.append(client)
           print(crayons.green(f'Bot ready as {client.user.display_name}'))
           await client.wait_until_ready()
           await edit_and_keep_client_member(client)
@@ -292,7 +291,6 @@ async def on_message(message):
 
           await asyncio.sleep(expiretime*60)
           del currentbots[message.author.id]
-          botlist.remove(client)
 
           for i in step:
             i.cancel()
@@ -315,12 +313,8 @@ async def on_message(message):
     
       if(args[0] == '+list'):
         current_list = currentbots.items()
-        
         for i in current_list:
           print(i)
-        
-        for i in botlist:
-          print(i.user.display_name)
       
       if(args[0] == prefix + 'help'):
         if(client):
@@ -459,8 +453,6 @@ async def on_message(message):
     
       if(args[0] == prefix + 'stop'):
         del currentbots[message.author.id]
-        botlist.remove(client)
-
         for i in step:
           i.cancel()
         await client.close(close_http=True,dispatch_close=True)
@@ -549,9 +541,7 @@ async def on_message(message):
         try:
 
           await member.set_ready(fortnitepy.ReadyState.READY)
-          
 
-          
           embed = discord.Embed(
             title="Bot set to Ready",
             description="Ready State: Ready",
