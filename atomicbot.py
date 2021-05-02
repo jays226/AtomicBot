@@ -71,11 +71,13 @@ def getClient(authcode:str,premium:bool):
     async def event_party_invite(invitation):
       try:
         await invitation.accept()
-        for i in client.party.members:
-          print(i.display_name)
+        # for i in client.party.members:
+        #   print(i.display_name)
       except (fortnitepy.errors.HTTPException):
         print(crayons.red("Error Joining Party"))
     return client
+
+    
 
 async def edit_and_keep_client_member(self):
       member = self.party.me
@@ -191,7 +193,7 @@ async def on_message(message):
         
         embed=discord.Embed(
         title="AtomicBot Control Panel",
-        description="**Made by: AtomicXYZ**", 
+        description="**Follow these steps to get a lobbybot!**", 
         color=color)
         embed.set_author(name="AtomicBot",icon_url=profileimg)
         
@@ -244,11 +246,15 @@ async def on_message(message):
         
         global step
         
-        step = [
-            bot.loop.create_task(client.start()),
-            bot.loop.create_task(client.wait_until_ready())
-        ]
-        complete, _ = await asyncio.wait(step, return_when=asyncio.FIRST_COMPLETED)
+        try:
+          step = [
+              bot.loop.create_task(client.start()),
+              bot.loop.create_task(client.wait_until_ready())
+          ]
+          complete, pending = await asyncio.wait(step, return_when=asyncio.FIRST_COMPLETED)
+        except asyncio.CancelledError:
+          for i in step:
+            i.cancel
 
         if(step[1] in complete):
           currentbots[message.author.id] = client
@@ -284,12 +290,17 @@ async def on_message(message):
             name=f"Your Bot will expire in {expiretime} min", 
             value="\nType " + prefix + "stop to stop your bot",
             inline=False)
+          embed.add_field(
+            name=f"Join the support server", 
+            value="https://discord.gg/qJqMaTfVK9",
+            inline=False)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
-
+          asyncio.sleep(1)
           await message.author.send(embed=embed)
 
           await asyncio.sleep(expiretime*60)
+          
           del currentbots[message.author.id]
 
           for i in step:
@@ -413,6 +424,10 @@ async def on_message(message):
             value="Sends this message",
             inline = True
           )
+          embed.add_field(
+            name=f"Join the support server", 
+            value="https://discord.gg/qJqMaTfVK9",
+            inline=False)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           
@@ -445,6 +460,10 @@ async def on_message(message):
             value="sends this message",
             inline = True
           )
+          embed.add_field(
+            name=f"Join the support server", 
+            value="https://discord.gg/qJqMaTfVK9",
+            inline=False)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           
@@ -539,15 +558,13 @@ async def on_message(message):
       if(args[0] == prefix + 'ready'):
         member = client.party.me
         try:
-
           await member.set_ready(fortnitepy.ReadyState.READY)
-
           embed = discord.Embed(
-            title="Bot set to Ready",
+            title="Bot set to Ready (Fortnite update messed this up so it wont work)",
             description="Ready State: Ready",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -557,7 +574,7 @@ async def on_message(message):
             description="Make sure the bot is not already in the ready state!",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -566,14 +583,14 @@ async def on_message(message):
         member = client.party.me
         try:
 
-          await member.set_ready(fortnitepy.ReadyState.SITTING_OUT)
+          await client.set_ready(fortnitepy.ReadyState.SITTING_OUT)
 
           embed = discord.Embed(
-            title="Bot set to Sitting Out",
+            title="Bot set to Sitting Out (Fortnite update messed this up so it wont work)",
             description="Ready State: Sitting Out",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -595,7 +612,7 @@ async def on_message(message):
           await member.set_ready(fortnitepy.ReadyState.NOT_READY)
 
           embed = discord.Embed(
-              title="Bot set to Not Ready",
+              title="Bot set to Not Ready (Fortnite update messed this up so it wont work)",
               description="Ready State: Not Ready",
               color=color
             )
@@ -667,7 +684,7 @@ async def on_message(message):
             description=cosmetic.id,
             color=color
           )
-          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-ghoul-trooper-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
+          embed.set_thumbnail(url=f"https://i.pinimg.com/originals/36/92/ee/3692eea092dce62732b7b65ab2f8cd1b.png")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -699,7 +716,7 @@ async def on_message(message):
             description=cosmetic.id,
             color=color
           )
-          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-skull-trooper-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
+          embed.set_thumbnail(url=f"https://i.redd.it/sgnjl7agwdl51.png")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -893,6 +910,6 @@ async def on_message(message):
       return
       
       
-# bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I')
+bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I')
 
-bot.run(os.environ['DISCORD_TOKEN'])
+# bot.run(os.environ['DISCORD_TOKEN'])
