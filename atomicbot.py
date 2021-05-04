@@ -15,9 +15,8 @@ email = 'email@email.com'
 password = 'password1'
 filename = 'device_auths.json'
 
-def getClient(authcode:str,premium:bool):
+def getClient(authcode:str,premium:bool,message):
     acceptFriend = True
-    acceptInvite = True
     status = 'AtomicBot by AtomicXYZ'
     banner = "brseason01"
     banner_color = "defaultcolor15"
@@ -29,37 +28,11 @@ def getClient(authcode:str,premium:bool):
         authorization_code=authcode),
         status=status,
         platform=fortnitepy.Platform(platform))
-
-      def get_device_auth_details():
-          if os.path.isfile(filename):
-              with open(filename, 'r') as fp:
-                  return json.load(fp)
-          return
-
-      def store_device_auth_details(email, details):
-          existing = client.get_device_auth_details()
-          existing[email] = details
-
-          with open(filename, 'w') as fp:
-              json.dump(existing, fp)
-
-      async def event_device_auth_generate(details, email):
-          client.store_device_auth_details(email, details)
-
-      # @client.event
-      # async def event_ready():
-      #     print(crayons.blue(f"Client ready as  + {client.user.display_name}"))
-      #     client.session = aiohttp.ClientSession()
-      #     client.session_event.set()
-      #     await edit_and_keep_client_member()
       
-
-
     except:
       print(crayons.red("Invalid Auth Code"))
       return
     
-
     @client.event
     async def event_friend_request(request): 
       try:
@@ -69,12 +42,54 @@ def getClient(authcode:str,premium:bool):
 
     @client.event
     async def event_party_invite(invitation):
-      try:
-        await invitation.accept()
+      embed = discord.Embed(
+          title=f"Party Invite From {invitation.sender.display_name}",
+          description="Accept or Decline Invite?",
+          color=color)
+      msgEmbed = await message.author.send(embed=embed)
+      reactions = ['✅','❌']
+      for emoji in reactions: 
+        await msgEmbed.add_reaction(emoji)
+      
+      def check(reaction, user):
+        return reaction.message == msgEmbed and user == message.author
+
+      reaction, user = await bot.wait_for('reaction_add',check=check)
+
+      if reaction.emoji == '✅':
+        try:
+          await invitation.accept()
+          embed = discord.Embed(
+              title=f"Accepted Invite From {invitation.sender.display_name}",
+              color=color)
+          msgAccept = await message.author.send(embed=embed)
+          await asyncio.sleep(5)
+          await msgAccept.delete()
+          await asyncio.sleep(1)
+          await msgEmbed.delete()
+        except (fortnitepy.errors.HTTPException):
+          embed = discord.Embed(
+              title=f"Error Joining Party",
+              color=color)
+          await message.author.send(embed=embed)
+          print(crayons.red("Error Joining Party"))
+      elif reaction.emoji == '❌':
+        embed = discord.Embed(
+              title=f"Declined Invite From {invitation.sender.display_name}",
+              color=color)
+        msgDecline = await message.author.send(embed=embed)
+        await asyncio.sleep(5)
+        await msgDecline.delete()
+        await asyncio.sleep(1)
+        await msgEmbed.delete()
+      return
+      
+      
+        
         # for i in client.party.members:
         #   print(i.display_name)
-      except (fortnitepy.errors.HTTPException):
-        print(crayons.red("Error Joining Party"))
+      
+
     return client
 
     
@@ -85,7 +100,8 @@ async def edit_and_keep_client_member(self):
         await member.edit_and_keep(
           partial(member.set_outfit, asset='CID_253_Athena_Commando_M_MilitaryFashion2'),
           partial(member.set_banner, icon="OtherBanner28", season_level=999),
-          partial(member.set_emote, asset='EID_Floss',run_for=20)
+          partial(member.set_emote, asset='EID_Floss',run_for=20),
+          partial(member.set_backpack, asset= 'BID_134_MilitaryFashion')
         )
       except:
         print(crayons.red("Error Editing Styles"))
@@ -96,9 +112,10 @@ loop = asyncio.get_event_loop()
 prefix = 'a!'
 
 color = 0xff0000
-footertext = "AtomicBot v1.7 by AtomicXYZ"
+footertext = "AtomicBot v1.8 by AtomicXYZ"
 
-intents = discord.Intents(messages=True, members=True)
+intents = discord.Intents.default()
+intents.members = True
 
 bot = commands.Bot(command_prefix=prefix, intents=intents)
 
@@ -127,9 +144,9 @@ async def fetch_cosmetic(type_, name) -> None:
     return data
 
 async def set_and_update_member_prop(self, schema_key: str, new_value: Any) -> None:
-        prop = {schema_key: self.party.me.meta.set_prop(schema_key, new_value)}
+    prop = {schema_key: self.party.me.meta.set_prop(schema_key, new_value)}
 
-        await self.party.me.patch(updated=prop)
+    await self.party.me.patch(updated=prop)
 
 async def set_and_update_party_prop(self, schema_key: str, new_value: Any) -> None:
     prop = {schema_key: self.party.me.meta.set_prop(schema_key, new_value)}
@@ -137,7 +154,6 @@ async def set_and_update_party_prop(self, schema_key: str, new_value: Any) -> No
     await self.party.patch(updated=prop)
 
 currentbots = {}
-# botlist = []
 savedbots = {} # future idea of saving bots (cant be saved locally)
 
 emoteseconds = 60
@@ -156,7 +172,7 @@ async def on_ready():
     await asyncio.sleep(10)
     await bot.change_presence(activity=discord.Game(name=f"{len(currentbots)} bots online"))
     await asyncio.sleep(10)
-  
+
 
 @bot.event
 async def on_message(message):
@@ -173,7 +189,7 @@ async def on_message(message):
     split = args[1:]
     command = " ".join(split)
     skinurl = "-".join(split)
-    if(args[0] == prefix + 'start'):
+    if(args[0] == prefix + 'start' or args[0] == prefix + 'startbot'):
         await asyncio.sleep(1)
         try:
           await message.delete()
@@ -242,7 +258,7 @@ async def on_message(message):
         else:
           print("Bot Creation Started")
           
-          client = getClient(msg.content,False)
+          client = getClient(msg.content,False,message)
         
         global step
         
@@ -294,10 +310,6 @@ async def on_message(message):
             name=f"Join the support server", 
             value="https://discord.gg/qJqMaTfVK9",
             inline=False)
-          embed.add_field(
-            name=f"**Website**", 
-            value="https://atomicbotinfo.glitch.me/",
-            inline=False)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           asyncio.sleep(1)
@@ -323,13 +335,14 @@ async def on_message(message):
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
-
     try:
-    
       if(args[0] == '+list'):
         current_list = currentbots.items()
         for i in current_list:
           print(i)
+      
+        
+  
       
       if(args[0] == prefix + 'help'):
         if(client):
@@ -356,6 +369,11 @@ async def on_message(message):
           embed.add_field(
             name="**" + prefix + "backpack**",
             value="Changes the bot's backpack/backling",
+            inline = True
+          )
+          embed.add_field(
+            name="**" + prefix + "pickaxe**",
+            value=f"Changes the bot's pickaxe",
             inline = True
           )
           embed.add_field(
@@ -429,13 +447,13 @@ async def on_message(message):
             inline = True
           )
           embed.add_field(
-            name=f"Join the support server", 
+            name=f"**Support Server**", 
             value="https://discord.gg/qJqMaTfVK9",
             inline=False)
           embed.add_field(
-            name=f"**Website**", 
-            value="https://atomicbotinfo.glitch.me/",
-            inline=False)
+          name=f"**Website**", 
+          value="https://atomicbotinfo.glitch.me/",
+          inline=False)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           
@@ -473,9 +491,9 @@ async def on_message(message):
             value="https://discord.gg/qJqMaTfVK9",
             inline=False)
           embed.add_field(
-            name=f"**Website**", 
-            value="https://atomicbotinfo.glitch.me/",
-            inline=False)
+          name=f"**Website**", 
+          value="https://atomicbotinfo.glitch.me/",
+          inline=False)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           
@@ -520,6 +538,35 @@ async def on_message(message):
         except:
           embed = discord.Embed(
             title="Error: Invalid Skin/ID",
+            description="Make sure you type the name correctly!",
+            color=color
+          )
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
+      
+      if(args[0] == prefix + 'pickaxe'):
+        cosmetic = await fetch_cosmetic('AthenaPickaxe', command)
+        member = client.party.me
+        try:
+          await member.set_pickaxe(
+            asset=cosmetic.id,
+          )
+          embed = discord.Embed(
+            title="Pickaxe Successfully Changed to " + cosmetic.name,
+            description=cosmetic.id,
+            color=color
+          )
+          await asyncio.sleep(1)
+          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-pickaxe.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
+        except:
+          embed = discord.Embed(
+            title="Error: Invalid Pickaxe/ID",
             description="Make sure you type the name correctly!",
             color=color
           )
