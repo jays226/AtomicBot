@@ -294,6 +294,10 @@ async def on_message(message):
             name=f"Join the support server", 
             value="https://discord.gg/qJqMaTfVK9",
             inline=False)
+          embed.add_field(
+            name=f"**Website**", 
+            value="https://atomicbotinfo.glitch.me/",
+            inline=False)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           asyncio.sleep(1)
@@ -428,6 +432,10 @@ async def on_message(message):
             name=f"Join the support server", 
             value="https://discord.gg/qJqMaTfVK9",
             inline=False)
+          embed.add_field(
+            name=f"**Website**", 
+            value="https://atomicbotinfo.glitch.me/",
+            inline=False)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           
@@ -463,6 +471,10 @@ async def on_message(message):
           embed.add_field(
             name=f"Join the support server", 
             value="https://discord.gg/qJqMaTfVK9",
+            inline=False)
+          embed.add_field(
+            name=f"**Website**", 
+            value="https://atomicbotinfo.glitch.me/",
             inline=False)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
