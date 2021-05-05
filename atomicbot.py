@@ -46,6 +46,7 @@ def getClient(authcode:str,premium:bool,message):
           title=f"Party Invite From {invitation.sender.display_name}",
           description="Accept or Decline Invite?",
           color=color)
+      await asyncio.sleep(1)
       msgEmbed = await message.author.send(embed=embed)
       reactions = ['✅','❌']
       for emoji in reactions: 
@@ -190,7 +191,7 @@ async def on_message(message):
     command = " ".join(split)
     skinurl = "-".join(split)
     if(args[0] == prefix + 'start' or args[0] == prefix + 'startbot'):
-        await asyncio.sleep(1)
+        await asyncio.sleep(4)
         try:
           await message.delete()
         except:
@@ -279,8 +280,7 @@ async def on_message(message):
           await edit_and_keep_client_member(client)
           await asyncio.sleep(1)
           embed = discord.Embed(
-            title=f" Bot Control Panel for {client.user.display_name}",
-            description= "**Type " + prefix + "help for the list of commands!**", 
+            title=f"Bot Control Panel for {client.user.display_name}",
             color=color)
           embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-summit-striker-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
           embed.add_field(
@@ -312,8 +312,13 @@ async def on_message(message):
             inline=False)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
+          
+          embed2 = discord.Embed(title="Type " + prefix + "help for the list of commands",color=color)
+          embed2.set_author(name="Help",icon_url="https://hotemoji.com/images/dl/1/question-mark-emoji-by-twitter.png")
+
           asyncio.sleep(1)
           await message.author.send(embed=embed)
+          await message.author.send(embed=embed2)
 
           await asyncio.sleep(expiretime*60)
           
@@ -619,7 +624,7 @@ async def on_message(message):
         try:
           await member.set_ready(fortnitepy.ReadyState.READY)
           embed = discord.Embed(
-            title="Bot set to Ready (Fortnite update messed this up so it wont work)",
+            title="Bot set to Ready",
             description="Ready State: Ready",
             color=color
           )
@@ -645,7 +650,7 @@ async def on_message(message):
           await client.set_ready(fortnitepy.ReadyState.SITTING_OUT)
 
           embed = discord.Embed(
-            title="Bot set to Sitting Out (Fortnite update messed this up so it wont work)",
+            title="Bot set to Sitting Out",
             description="Ready State: Sitting Out",
             color=color
           )
@@ -671,7 +676,7 @@ async def on_message(message):
           await member.set_ready(fortnitepy.ReadyState.NOT_READY)
 
           embed = discord.Embed(
-              title="Bot set to Not Ready (Fortnite update messed this up so it wont work)",
+              title="Bot set to Not Ready",
               description="Ready State: Not Ready",
               color=color
             )
