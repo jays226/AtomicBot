@@ -1,33 +1,110 @@
-import os
-import discord
+import asyncio
 import json
-from discord.ext import commands
-from fortnitepy.ext import commands as cmds
-from typing import Optional, Union, Any
-import crayons
+import os
+from functools import partial
+from typing import Any, Optional, Union
 import aiohttp
 import BenBotAsync
-import asyncio
+import crayons
+import discord
 import fortnitepy
-from functools import partial
+import requests
+from discord.ext import commands
+from fortnitepy.ext import commands as cmds
 
-def getClient(authcode:str,premium:bool,message):
+clientToken = "NTIyOWRjZDNhYzM4NDUyMDhiNDk2NjQ5MDkyZjI1MWI6ZTNiZDJkM2UtYmY4Yy00ODU3LTllN2QtZjNkOTQ3ZDIyMGM3"
+
+def getAccessToken():
+    url = "https://account-public-service-prod.ol.epicgames.com/account/api/oauth/token"
+
+    payload = "grant_type=client_credentials"
+    headers = {
+        'content-type': "application/x-www-form-urlencoded",
+        'authorization': "basic YjA3MGYyMDcyOWY4NDY5M2I1ZDYyMWM5MDRmYzViYzI6SEdAWEUmVEdDeEVKc2dUIyZfcDJdPWFSbyN+Pj0+K2M2UGhSKXpYUA==",
+        'cache-control': "no-cache",
+        }
+
+    response = requests.request("POST", url, data=payload, headers=headers)
+
+    data = json.loads(response.text)
+
+    access_token = data['access_token']
+    expire = data['expires_in']
+
+    return access_token
+
+def getDeviceCode(access_token):
+    url2 = "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/deviceAuthorization"
+
+    querystring2 = {"prompt":"login"}
+
+    payload2 = "prompt=promptType"
+    headers2 = {
+        'content-type': "application/x-www-form-urlencoded",
+        'authorization': f"bearer {access_token}",
+        'cache-control': "no-cache",
+        }
+
+    response2 = requests.request("POST", url2, data=payload2, headers=headers2, params=querystring2)
+
+    data2 = json.loads(response2.text)
+
+    code = data2['user_code']
+
+    devicecode = data2['device_code']
+
+    verification_url = data2['verification_uri_complete']
+
+    return data2
+
+def getDeviceAuth(devicecode):
+    url3 = "https://account-public-service-prod.ol.epicgames.com/account/api/oauth/token"
+
+    payload3 = f"grant_type=device_code&device_code={devicecode}"
+    headers3 = {
+        'content-type': "application/x-www-form-urlencoded",
+        'authorization': f"basic {clientToken}",
+        'cache-control': "no-cache",
+        }
+
+    response3 = requests.request("POST", url3, data=payload3, headers=headers3)
+
+    data3 = json.loads(response3.text)
+
+    return data3
+
+def getIDs(access_token,account_id):
+  url = f"https://account-public-service-prod.ol.epicgames.com/account/api/public/account/{account_id}/deviceAuth"
+
+  headers = {
+      'content-type': "application/json",
+      'authorization': f"bearer {access_token}",
+      'cache-control': "no-cache",
+      }
+
+  response = requests.request("POST", url, headers=headers)
+
+  data = json.loads(response.text)
+
+  return data
+
+
+def getClient(device_id:str,account_id:str,secret:str,message):
     acceptFriend = True
     status = 'AtomicBot by AtomicXYZ'
     banner = "brseason01"
     banner_color = "defaultcolor15"
     platform = 'PSN'
     joinMessage = ''
-
-    try:
-      client = fortnitepy.Client(auth=fortnitepy.AdvancedAuth(
-        authorization_code=authcode),
-        status=status,
-        platform=fortnitepy.Platform(platform))
-      
-    except:
-      print(crayons.red("Invalid Auth Code"))
-      return
+    client = fortnitepy.Client(auth=fortnitepy.DeviceAuth(
+      device_id=device_id,
+      account_id=account_id,
+      secret=secret,
+      ios_token=clientToken
+      ),
+      status=status,
+      platform=fortnitepy.Platform(platform)
+    )
 
     @client.event
     async def event_friend_request(request): 
@@ -79,9 +156,6 @@ def getClient(authcode:str,premium:bool,message):
         await msgDecline.delete()
         await asyncio.sleep(1)
         await msgEmbed.delete()
-      
-        # for i in client.party.members:
-        #   print(i.display_name)
     return client
 
     
@@ -104,7 +178,7 @@ loop = asyncio.get_event_loop()
 prefix = 'a!'
 
 color = 0xff0000
-footertext = "AtomicBot v1.9 by AtomicXYZ"
+footertext = "AtomicBot v2.0 by AtomicXYZ"
 
 intents = discord.Intents.default()
 intents.members = True
@@ -177,12 +251,11 @@ async def on_message(message):
     command = " ".join(split)
     skinurl = "-".join(split)
     if(args[0] == prefix + 'start' or args[0] == prefix + 'startbot'):
-        await asyncio.sleep(4)
         try:
           await message.delete()
         except:
           pass
-
+        await asyncio.sleep(4)
         if(client):
           embed=discord.Embed(
           title="Error: Bot Currently Running",
@@ -193,80 +266,81 @@ async def on_message(message):
           await message.author.send(embed=embed)
           return
 
-        
+        access_token = getAccessToken()
+        data = getDeviceCode(access_token)
+
         embed=discord.Embed(
         title="AtomicBot Control Panel",
-        description="**Follow these steps to get a lobbybot!**", 
+        description=f"**1.** [**Click Here**](https://epicgames.com/) **and Log in with an ALT Account**\n\n**2.** [**Click Here**]({data['verification_uri_complete']}) **and click \"confirm\"**\n\n**3. React with ✅**\n\n**React with ❌ cancel**",
         color=color)
         embed.set_author(name="AtomicBot",icon_url=profileimg)
-        
-        embed.add_field(
-          name="**Step 1**", 
-          value="Create an ALT Epic Games Account and sign into: https://epicgames.com", 
-          inline=False)
-
-        embed.add_field(
-          name="**Step 2**", 
-          value="[**Click Here**](https://www.epicgames.com/id/api/redirect?clientId=3446cd72694c4a4485d81b77adbb2141&responseType=code)", inline=False)
-        
-        embed.add_field(
-          name="**Step 3**", 
-          value="Paste the code from the website here\n(Refer to the image below for what to copy & paste)", inline=False)
-        
-        embed.set_image(url="https://media.discordapp.net/attachments/832266569815949352/836389927474298970/Screenshot-2021-04-26-195151.png")
-        
-        embed.add_field(
-          name="**Type " + prefix + "cancel to cancel bot creation**", 
-          value="(You can create a new bot later with " + prefix + "start)", 
-          inline=False)
 
         embed.set_footer(text=footertext)
 
-        await message.author.send(embed=embed)
+        msgEmbed = await message.author.send(embed=embed)
+        reactions = ['✅','❌']
         
+        for emoji in reactions: 
+          await msgEmbed.add_reaction(emoji)
+        
+        def check(reaction, user):
+          return reaction.message == msgEmbed and user == message.author
 
-        def check(msg):
-          return (msg.content and (len(msg.content) == 32 or len(msg.content) == 8)) and msg.author.id == message.author.id
+        reaction, user = await bot.wait_for('reaction_add',check=check)
 
-        msg = await bot.wait_for('message', check=check)
+        if reaction.emoji == '✅':
+          try:
+            data2 = getDeviceAuth(data['device_code'])
+            dataID = getIDs(data2['access_token'],data2['account_id'])
+            
+            device = dataID['deviceId']
+            account = dataID['accountId']
+            secret = dataID['secret']
 
-        if(msg.content.lower() == prefix + "cancel"):
-          await asyncio.sleep(1)
-          embeddone = discord.Embed(
-            title=
-            "Bot Creation Cancelled!",
-            description=
-            "Start a new Bot by typing " + prefix + "start",
+            client = getClient(device, account, secret, message)
+          except Exception as e:
+            print(f"Bot creation error: {e}")
+            await asyncio.sleep(1)
+            embed=discord.Embed(
+              title="Error: Please complete __Step 2__ and click \"Confirm\" before clicking ✅",
+              color=color)
+            embed.set_author(name="AtomicBot",icon_url=profileimg)
+
+            embed.set_footer(text=footertext)
+
+            msgEmbed = await message.author.send(embed=embed)
+            return
+
+        else:
+          print("Bot creation cancelled")
+          embed=discord.Embed(
+            title="Bot Creation Cancelled",
             color=color)
-          await message.author.send(embed=embeddone)
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+
+          embed.set_footer(text=footertext)
+
+          msgEmbed = await message.author.send(embed=embed)
           return
         
-        
-        else:
-          print("Bot Creation Started")
-          
-          client = getClient(msg.content,False,message)
-        
+        print("Bot Creation Started")
         global tasks
+
         tasks = []
         
         try:
-          
           tasks.append(bot.loop.create_task(client.start()))
           tasks.append(bot.loop.create_task(client.wait_until_ready()))
-          
           complete, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-        
-        except asyncio.CancelledError: 
+        except: 
+          print("cancelled")
           for task in tasks:
             task.cancel
 
-        if(asyncio.FIRST_COMPLETED and client.is_ready):
+        if(tasks[1] in complete):
           botdict[message.author.id] = client
           print(crayons.green(f'Bot ready as {client.user.display_name}'))
-          await client.wait_until_ready()
           await edit_and_keep_client_member(client)
-          await asyncio.sleep(1)
           embed = discord.Embed(
             title=f"Bot Control Panel for {client.user.display_name}",
             color=color)
@@ -304,7 +378,6 @@ async def on_message(message):
           embed2 = discord.Embed(title="Type " + prefix + "help for the list of commands",color=color)
           embed2.set_author(name="Help",icon_url="https://hotemoji.com/images/dl/1/question-mark-emoji-by-twitter.png")
 
-          asyncio.sleep(1)
           await message.author.send(embed=embed)
           await message.author.send(embed=embed2)
 
@@ -331,10 +404,7 @@ async def on_message(message):
         current_list = botdict.items()
         for i in current_list:
           print(i)
-      
-        
-  
-      
+
       if(args[0] == prefix + 'help'):
         if(client):
           embed = discord.Embed(
@@ -527,7 +597,7 @@ async def on_message(message):
             color=color
           )
           await asyncio.sleep(1)
-          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
+          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -556,7 +626,7 @@ async def on_message(message):
             color=color
           )
           await asyncio.sleep(1)
-          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-pickaxe.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
+          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.pickaxe}/icon.png")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -637,11 +707,11 @@ async def on_message(message):
           await message.author.send(embed=embed)
           return
         
-        except:
+        except Exception as e:
           print(e)
           embed = discord.Embed(
             title="Error: Invalid Variant",
-            description="Make sure you type the name correctly!\nFor help with variants, refer to this example: https://imgur.com/a/dQv2qRR\nSome examples of variant types include **material, clothing_color, emissive, and stage**",
+            description="Make sure you type the name correctly!",
             color=color
           )
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -661,12 +731,12 @@ async def on_message(message):
       
       if(args[0] == prefix + 'info'):
         embed = discord.Embed(
-          title="AtomicBot",
+          title="**AtomicBot**",
           color=color
         )
         embed.add_field(
-          name="Commands",
-          value="**Type " + prefix + " help for help",
+          name="**Commands**",
+          value="Type " + prefix + " help for help",
           inline=False
         )
         embed.add_field(
@@ -675,8 +745,18 @@ async def on_message(message):
           inline=False
         )
         embed.add_field(
+          name="**Bots Online**",
+          value=len(botdict),
+          inline=False
+        )
+        embed.add_field(
           name="**Coded By**",
           value="AtomicXYZ",
+          inline=False
+        )
+        embed.add_field(
+          name="**Website (With Invite Links)**",
+          value="https://atomicbotinfo.glitch.me/",
           inline=False
         )
         embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -865,36 +945,20 @@ async def on_message(message):
         cosmetic = await fetch_cosmetic('AthenaDance', command)
         member = client.party.me
         try:
-          if(args[1].lower() == "floss"):
-            await member.set_emote(
-              asset="EID_Floss",
-              run_for=emoteseconds
-            )
-            embed = discord.Embed(
-            title="Emote Successfully Changed to " + cosmetic.name,
-            description="EID_Floss",
-            color=color
-            )
-            embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-emote.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
-            embed.set_author(name="AtomicBot",icon_url=profileimg)
-            embed.set_footer(text=footertext)
-            await message.author.send(embed=embed)
-            return
-          else:
-            await member.set_emote(
-              asset=cosmetic.id,
-              run_for=emoteseconds
-            )
-            embed = discord.Embed(
-            title="Emote Successfully Changed to " + cosmetic.name,
-            description=cosmetic.id,
-            color=color
-            )
-            embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-emote.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
-            embed.set_author(name="AtomicBot",icon_url=profileimg)
-            embed.set_footer(text=footertext)
-            await message.author.send(embed=embed)
-            return
+          await member.set_emote(
+            asset=cosmetic.id,
+            run_for=emoteseconds
+          )
+          embed = discord.Embed(
+          title="Emote Successfully Changed to " + cosmetic.name,
+          description=cosmetic.id,
+          color=color
+          )
+          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.emote}/icon.png")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
           
         except:
           embed = discord.Embed(
@@ -920,7 +984,7 @@ async def on_message(message):
             description=cosmetic.id,
             color=color
           )
-          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-{skinurl}-back-bling.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
+          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.backpack}/icon.png")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -1039,6 +1103,6 @@ async def on_message(message):
       return
       
       
-# bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I')
+bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I')
 
-bot.run(os.environ['DISCORD_TOKEN'])
+# bot.run(os.environ['DISCORD_TOKEN'])
