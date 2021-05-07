@@ -4,3 +4,4 @@ aiohttp
 BenBotAsync
 asyncio
 fortnitepy
+requests
