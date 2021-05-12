@@ -181,7 +181,6 @@ color = 0xff0000
 footertext = "AtomicBot v2.0 by AtomicXYZ"
 
 intents = discord.Intents.default()
-intents.members = True
 
 bot = commands.Bot(command_prefix=prefix, intents=intents)
 
@@ -1103,6 +1102,6 @@ async def on_message(message):
       return
       
       
-# bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I')
+bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I')
 
-bot.run(os.environ['DISCORD_TOKEN'])
+# bot.run(os.environ['DISCORD_TOKEN'])
