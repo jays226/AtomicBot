@@ -254,7 +254,7 @@ async def on_message(message):
           await message.delete()
         except:
           pass
-        await asyncio.sleep(4)
+        await asyncio.sleep(5)
         if(client):
           embed=discord.Embed(
           title="Error: Bot Currently Running",
