@@ -124,13 +124,10 @@ def getClient(device_id:str,account_id:str,secret:str,message):
       reactions = ['✅','❌']
       for emoji in reactions: 
         await msgEmbed.add_reaction(emoji)
-      
-      def check(reaction, user):
-        return reaction.message == msgEmbed and user == message.author
 
-      reaction, user = await bot.wait_for('reaction_add',check=check)
+      reaction = await bot.wait_for('raw_reaction_add', check=lambda reaction: reaction.message_id == msgEmbed.id and reaction.user_id == message.author.id)
 
-      if reaction.emoji == '✅':
+      if reaction.emoji.name == '✅':
         try:
           await invitation.accept()
           embed = discord.Embed(
@@ -147,7 +144,7 @@ def getClient(device_id:str,account_id:str,secret:str,message):
               color=color)
           await message.author.send(embed=embed)
           print(crayons.red("Error Joining Party"))
-      elif reaction.emoji == '❌':
+      elif reaction.emoji.name == '❌':
         embed = discord.Embed(
               title=f"Declined Invite From {invitation.sender.display_name}",
               color=color)
@@ -181,7 +178,6 @@ color = 0xff0000
 footertext = "AtomicBot v2.0 by AtomicXYZ"
 
 intents = discord.Intents.default()
-intents.members = True
 
 bot = commands.Bot(command_prefix=prefix, intents=intents)
 
@@ -283,12 +279,10 @@ async def on_message(message):
         for emoji in reactions: 
           await msgEmbed.add_reaction(emoji)
         
-        def check(reaction, user):
-          return reaction.message == msgEmbed and user == message.author
 
-        reaction, user = await bot.wait_for('reaction_add',check=check)
+        reaction = await bot.wait_for('raw_reaction_add', check=lambda reaction: reaction.message_id == msgEmbed.id and reaction.user_id == message.author.id)
 
-        if reaction.emoji == '✅':
+        if reaction.emoji.name == '✅':
           try:
             data2 = getDeviceAuth(data['device_code'])
             dataID = getIDs(data2['access_token'],data2['account_id'])
