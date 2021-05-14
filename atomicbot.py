@@ -507,7 +507,7 @@ async def on_message(message):
             inline=False)
           embed.add_field(
           name=f"**Website**", 
-          value="https://atomicbotinfo.glitch.me/",
+          value="https://atomicxyz.tk/",
           inline=False)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
@@ -552,7 +552,7 @@ async def on_message(message):
             inline=False)
           embed.add_field(
           name=f"**Website**", 
-          value="https://atomicbotinfo.glitch.me/",
+          value="https://atomicxyz.tk/",
           inline=False)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
@@ -750,7 +750,7 @@ async def on_message(message):
         )
         embed.add_field(
           name="**Website (With Invite Links)**",
-          value="https://atomicbotinfo.glitch.me/",
+          value="https://atomicxyz.tk/",
           inline=False
         )
         embed.set_author(name="AtomicBot",icon_url=profileimg)
