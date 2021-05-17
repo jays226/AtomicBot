@@ -33,6 +33,24 @@ def getAccessToken():
 
     return access_token
 
+def getCosmetic(cosmetic):
+  try:
+    url = "https://api.gummyfn.com/cosmetic/"
+
+    querystring2 = {"name":cosmetic}
+
+    headers = {
+        'content-type': "application/json",
+        'cache-control': "no-cache",
+        }
+
+    response = requests.request("GET", url, headers=headers,params=querystring2)
+
+    data = json.loads(response.text)
+    return data
+  except:
+    return None
+
 def getDeviceCode(access_token):
     url2 = "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/deviceAuthorization"
 
@@ -492,6 +510,11 @@ async def on_message(message):
             inline = True
           )
           embed.add_field(
+            name="**" + prefix + "search**",
+            value="Searches for the cosmetic (powered by Gummyfn API)",
+            inline = True
+          )
+          embed.add_field(
             name="**" + prefix + "invite**",
             value="Sends the bot's Discord Invite link",
             inline = True
@@ -524,6 +547,11 @@ async def on_message(message):
           embed.add_field(
             name="**" + prefix + "info**",
             value="shows the info of the bot",
+            inline = True
+          )
+          embed.add_field(
+            name="**" + prefix + "search**",
+            value="Searches for the cosmetic (powered by Gummyfn API)",
             inline = True
           )
           embed.add_field(
@@ -723,6 +751,35 @@ async def on_message(message):
       #   embed.set_footer(text=footertext)
       #   await message.author.send(embed=embed)
       
+      if(args[0] == prefix + 'search'):
+          try:
+            data1 = getCosmetic(command)
+            data = data1['info']
+
+            embed = discord.Embed(
+              title=data['name'],
+              description=data['id'],
+              color=color
+            )
+            embed.add_field(
+              name="Description",
+              value=data['description'],
+              inline=False
+            )
+            embed.set_thumbnail(url=data1['images']['icon'])
+            embed.set_author(name="AtomicBot",icon_url=profileimg)
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+          except Exception as e:
+            embed = discord.Embed(
+            title="Error: Search Failed",
+            description=e,
+            color=color
+            )
+            embed.set_author(name="AtomicBot",icon_url=profileimg)
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+        
       if(args[0] == prefix + 'info'):
         embed = discord.Embed(
           title="**AtomicBot**",
