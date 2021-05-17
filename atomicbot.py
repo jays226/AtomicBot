@@ -769,7 +769,7 @@ async def on_message(message):
             embed.set_thumbnail(url=data1['images']['icon'])
             embed.set_author(name="AtomicBot",icon_url=profileimg)
             embed.set_footer(text=footertext)
-            await message.author.send(embed=embed)
+            await message.channel.send(embed=embed)
           except Exception as e:
             embed = discord.Embed(
             title="Error: Search Failed",
@@ -778,7 +778,7 @@ async def on_message(message):
             )
             embed.set_author(name="AtomicBot",icon_url=profileimg)
             embed.set_footer(text=footertext)
-            await message.author.send(embed=embed)
+            await message.channel.send(embed=embed)
         
       if(args[0] == prefix + 'info'):
         embed = discord.Embed(
