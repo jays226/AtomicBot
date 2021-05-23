@@ -49,12 +49,12 @@ def deleteSavedBot(user_id):
 #CURRENT BOTS MONGODB
 current_bots = mydb['current_bots']
 def storeCurrentBot(user_id,info):
-    x = {"user_id" : user_id, "client_info" : info}
-    current_bots.insert_one(x)
+    # x = {"user_id" : user_id, "client_info" : info}
+    # current_bots.insert_one(x)
     print(crayons.green("Saved Current UserId/Bot in Database"))
 
 def deleteCurrentBot(user_id, info):
-    current_bots.delete_one({'user_id' : user_id, 'client_info' : info})
+    # current_bots.delete_one({'user_id' : user_id, 'client_info' : info})
     print("Deleted current_bots")
 
 #EPIC GAMES REQUESTS
