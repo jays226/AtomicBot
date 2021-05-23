@@ -1,3 +1,4 @@
+print("launched")
 import asyncio
 import json
 import os
