@@ -1,17 +1,115 @@
-print("launched")
 import asyncio
 import json
 import os
 from functools import partial
-from typing import Any, Optional, Union
-import aiohttp
+from typing import Any
 import BenBotAsync
 import crayons
 import discord
 import fortnitepy
 import requests
 from discord.ext import commands
-from fortnitepy.ext import commands as cmds
+import pymongo
+
+website = "https://atomicxyz.tk/atomicbot/"
+
+myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+
+mydb = myclient['atomicbot_db']
+
+#SAVING BOTS
+
+mycol = mydb["user_bots"]
+
+def getUserBots(user_id):
+  bots = []
+  documents = list(mycol.find())
+  for doc in documents:
+      if(doc['user_id'] == user_id):
+          bots.append(doc)
+  print(bots)
+  return bots
+
+def storeSavedBot(user_id,auths):
+    client = {"user_id" : user_id, "auths" : auths}
+    mycol.insert_one(client)
+    print(crayons.green("Saved Bot in Database"))
+
+def getSavedBot(user_id):
+  documents = list(mycol.find())
+  for doc in documents:
+      if(doc['user_id'] == user_id):
+          print(doc['auths'])
+
+def deleteSavedBot(user_id):
+    mycol.delete_one({'user_id' : user_id})
+    print(f"Deleted {user_id}")
+
+
+#CURRENT BOTS MONGODB
+current_bots = mydb['current_bots']
+def storeCurrentBot(user_id,info):
+    x = {"user_id" : user_id, "client_info" : info}
+    current_bots.insert_one(x)
+    print(crayons.green("Saved Current UserId/Bot in Database"))
+
+def deleteCurrentBot(user_id, info):
+    current_bots.delete_one({'user_id' : user_id, 'client_info' : info})
+    print("Deleted current_bots")
+
+#EPIC GAMES REQUESTS
+def getDisplayName(account_id):
+  access_token = getAccessToken()
+
+  url = "https://account-public-service-prod.ol.epicgames.com/account/api/public/account/"
+
+  querystring2 = {"accountId":account_id}
+  
+  headers = {
+        'content-type': "application/json",
+        'authorization': f"bearer {access_token}",
+        'cache-control': "no-cache",
+        }
+
+  response = requests.request("GET", url, headers=headers,params=querystring2)
+
+  data = json.loads(response.text)
+  print(data)
+  return data[0]['displayName']
+
+def getCosmetic(cosmetic):
+  try:
+    url = "https://api.gummyfn.com/cosmetic/"
+
+    querystring2 = {"name":cosmetic}
+
+    headers = {
+        'content-type': "application/ json",
+        'cache-control': "no-cache",
+        }
+
+    response = requests.request("GET", url, headers=headers,params=querystring2)
+
+    data = json.loads(response.text)
+    return data
+  except:
+    return None
+
+def getVariants(id):
+    url = "https://fortnite-api.com/v2/cosmetics/br/search/"
+
+    querystring2 = {"id":id}
+
+    headers = {
+        'content-type': "application/json",
+        'cache-control': "no-cache",
+        }
+
+    response = requests.request("GET", url, headers=headers,params=querystring2)
+
+    data = json.loads(response.text)
+
+    return data["data"]["variants"][0]
 
 clientToken = "NTIyOWRjZDNhYzM4NDUyMDhiNDk2NjQ5MDkyZjI1MWI6ZTNiZDJkM2UtYmY4Yy00ODU3LTllN2QtZjNkOTQ3ZDIyMGM3"
 
@@ -34,24 +132,6 @@ def getAccessToken():
 
     return access_token
 
-def getCosmetic(cosmetic):
-  try:
-    url = "https://api.gummyfn.com/cosmetic/"
-
-    querystring2 = {"name":cosmetic}
-
-    headers = {
-        'content-type': "application/json",
-        'cache-control': "no-cache",
-        }
-
-    response = requests.request("GET", url, headers=headers,params=querystring2)
-
-    data = json.loads(response.text)
-    return data
-  except:
-    return None
-
 def getDeviceCode(access_token):
     url2 = "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/deviceAuthorization"
 
@@ -67,12 +147,6 @@ def getDeviceCode(access_token):
     response2 = requests.request("POST", url2, data=payload2, headers=headers2, params=querystring2)
 
     data2 = json.loads(response2.text)
-
-    code = data2['user_code']
-
-    devicecode = data2['device_code']
-
-    verification_url = data2['verification_uri_complete']
 
     return data2
 
@@ -111,8 +185,6 @@ def getIDs(access_token,account_id):
 def getClient(device_id:str,account_id:str,secret:str,message):
     acceptFriend = True
     status = 'AtomicBot by AtomicXYZ'
-    banner = "brseason01"
-    banner_color = "defaultcolor15"
     platform = 'PSN'
     joinMessage = ''
     client = fortnitepy.Client(auth=fortnitepy.DeviceAuth(
@@ -143,6 +215,9 @@ def getClient(device_id:str,account_id:str,secret:str,message):
       reactions = ['✅','❌']
       for emoji in reactions: 
         await msgEmbed.add_reaction(emoji)
+      
+      def check(reaction, user):
+        return reaction.message == msgEmbed and user == message.author
 
       reaction = await bot.wait_for('raw_reaction_add', check=lambda reaction: reaction.message_id == msgEmbed.id and reaction.user_id == message.author.id)
 
@@ -230,7 +305,16 @@ async def set_and_update_party_prop(self, schema_key: str, new_value: Any) -> No
     await self.party.patch(updated=prop)
 
 botdict = {}
-savedbots = {}
+savedauths = {}
+
+def logBots():
+  with open('device_auths.json', 'w') as fp:
+    json.dump(botdict, fp, sort_keys=False, indent=4)
+
+def getBots():
+  with open('device_auths.json', 'w') as fp:
+    data = json.load(fp)
+  return data
 
 emoteseconds = 60
 expiretime = 30
@@ -240,15 +324,17 @@ profileimg = "https://cdn.discordapp.com/avatars/829050201648922645/d8d62960d600
 async def on_ready():
   print('Logged in')
   while True:
-    await bot.change_presence(activity=discord.Game(name="made by AtomicXYZ"))
-    await asyncio.sleep(10)
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=str(len(bot.guilds)) + " Servers"))
-    await asyncio.sleep(10)
-    await bot.change_presence(activity=discord.Game(name="a!help"))
-    await asyncio.sleep(10)
-    await bot.change_presence(activity=discord.Game(name=f"{len(botdict)} bots online"))
-    await asyncio.sleep(10)
-
+    try:
+      await bot.change_presence(activity=discord.Game(name="made by AtomicXYZ"))
+      await asyncio.sleep(10)
+      await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=str(len(bot.guilds)) + " Servers"))
+      await asyncio.sleep(10)
+      await bot.change_presence(activity=discord.Game(name="a!help"))
+      await asyncio.sleep(10)
+      await bot.change_presence(activity=discord.Game(name=f"{len(botdict)} bots online"))
+      await asyncio.sleep(10)
+    except:
+      continue
 
 @bot.event
 async def on_message(message):
@@ -262,15 +348,16 @@ async def on_message(message):
 
     args = message.content.lower().split(' ')
     client = botdict.get(message.author.id,None)
-    split = args[1:]
-    command = " ".join(split)
-    skinurl = "-".join(split)
+    auths = savedauths.get(message.author.id,None)
+    end = args[1:]
+    command = " ".join(end)
+    skinurl = "-".join(end)
     if(args[0] == prefix + 'start' or args[0] == prefix + 'startbot'):
         try:
           await message.delete()
         except:
           pass
-        await asyncio.sleep(5)
+        await asyncio.sleep(4)
         if(client):
           embed=discord.Embed(
           title="Error: Bot Currently Running",
@@ -297,7 +384,6 @@ async def on_message(message):
         
         for emoji in reactions: 
           await msgEmbed.add_reaction(emoji)
-        
 
         reaction = await bot.wait_for('raw_reaction_add', check=lambda reaction: reaction.message_id == msgEmbed.id and reaction.user_id == message.author.id)
 
@@ -340,18 +426,26 @@ async def on_message(message):
         global tasks
 
         tasks = []
-        
+
         try:
           tasks.append(bot.loop.create_task(client.start()))
           tasks.append(bot.loop.create_task(client.wait_until_ready()))
-          complete, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+          completed, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
         except: 
           print("cancelled")
           for task in tasks:
             task.cancel
 
-        if(tasks[1] in complete):
+        if(client.is_ready()):
           botdict[message.author.id] = client
+          client_info = {'name' : client.user.display_name, 'id' : client.user.id}
+          storeCurrentBot(message.author.id, client_info)
+          savedauths[message.author.id] = {
+            'device_id' : device,
+            'account_id' : account,
+            'secret' : secret
+          }
+
           print(crayons.green(f'Bot ready as {client.user.display_name}'))
           await edit_and_keep_client_member(client)
           embed = discord.Embed(
@@ -398,6 +492,9 @@ async def on_message(message):
           for task in tasks:
             task.cancel
           del botdict[message.author.id]
+          client_info = {'name' : client.user.display_name, 'id' : client.user.id}
+          deleteCurrentBot(message.author.id, client_info)
+          del savedauths[message.author.id]
           await client.close(close_http=True,dispatch_close=True)
           if(client.is_closed):
             print(crayons.red(f"Bot cancelled {client.user.display_name}"))
@@ -405,7 +502,7 @@ async def on_message(message):
 
         else:
           embed = discord.Embed(
-            title="Bot was unable to start! (Most likely incorrect auth code)",
+            title="Bot was unable to start!",
             description="You can create a new bot with " + prefix + "start",
             color=color)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -413,6 +510,124 @@ async def on_message(message):
           await message.author.send(embed=embed)
           return
     try:
+      # if(args[0] == prefix + 'save'):
+      #   if(auths):
+      #     embed=discord.Embed(
+      #       title="Would you like to save this bot?",
+      #       description=f"**React with ✅ to save the bot**\n\n**React with ❌ cancel**",
+      #       color=color)
+      #     embed.set_author(name="AtomicBot",icon_url=profileimg)
+
+      #     embed.set_footer(text=footertext)
+
+      #     msgEmbed = await message.author.send(embed=embed)
+      #     reactions = ['✅','❌']
+          
+      #     for emoji in reactions: 
+      #       await msgEmbed.add_reaction(emoji)
+          
+      #     def check(reaction, user):
+      #       return reaction.message == msgEmbed and user == message.author
+
+      #     reaction = await bot.wait_for('raw_reaction_add', check=lambda reaction: reaction.message_id == msgEmbed.id and reaction.user_id == message.author.id)
+      #     try:
+      #       if reaction.emoji.name == '✅':
+      #         storeSavedBot(message.author.id, auths)
+      #         embed=discord.Embed(
+      #         title="Bot Successfully Saved ✅",
+      #         color=color)
+      #         embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #         await message.author.send(embed=embed)
+      #       elif(len(getUserBots(message.author.id)) >= 3):
+      #         embed=discord.Embed(
+      #           title="Error: You currently have the max amount of bots saved",
+      #           color=color)
+      #         embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #         embed.set_footer(text=footertext)
+      #         await message.author.send(embed=embed)
+      #         return
+      #     except Exception as e:
+      #       print(e)
+      #       pass
+      #   else:
+      #     embed=discord.Embed(
+      #       title="An Error Occurred with Saving Your Bot",
+      #       color=color)
+      #     embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #     embed.set_footer(text=footertext)
+      #     await message.author.send(embed=embed)
+      
+      # if(args[0] == prefix + 'load'):
+      #   if(getUserBots(message.author.id)):
+      #     if(client):
+      #       embed=discord.Embed(
+      #         title="You already have a client running, would you like to cancel it and load a new bot?",
+      #         description=f"**React with ✅ to load a new bot**\n\n**React with ❌ cancel**",
+      #         color=color)
+      #       embed.set_author(name="AtomicBot",icon_url=profileimg)
+
+      #       embed.set_footer(text=footertext)
+
+      #       msgEmbed = await message.author.send(embed=embed)
+      #       reactions = ['✅','❌']
+            
+      #       for emoji in reactions: 
+      #         await msgEmbed.add_reaction(emoji)
+            
+      #       def check(reaction, user):
+      #         return reaction.message == msgEmbed and user == message.author
+
+      #       reaction = await bot.wait_for('raw_reaction_add', check=lambda reaction: reaction.message_id == msgEmbed.id and reaction.user_id == message.author.id)
+
+      #       try:
+      #         if reaction.emoji.name == '✅':
+      #           del botdict[message.author.id]
+      #           client_info = {'name' : client.user.display_name, 'id' : client.user.id}
+      #           deleteCurrentBot(message.author.id, client_info)
+      #           for task in tasks:
+      #             task.cancel
+      #           await client.close(close_http=True,dispatch_close=True)
+      #           if(client.is_closed):
+      #             print(crayons.red(f"Bot cancelled {client.user.display_name}"))
+      #         else:
+      #           return
+      #       except Exception as e:
+      #         print(e)
+      #         pass
+          
+      #     botsString = ""
+      #     count = 1
+      #     for i in getUserBots(message.author.id):
+      #       list_id = i['auths']
+      #       account_id = list_id[1]
+      #       print(account_id)
+      #       user_name = getDisplayName(str(account_id))
+      #       botsString += f"{count}. " + user_name + "\n"
+      #       count += 1
+          
+      #     print(botsString)
+          
+      #     embed=discord.Embed(
+      #       title=f"Saved Bots for {message.author.name}",
+      #       description=botsString,
+      #       color=color)
+      #     embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #     embed.set_footer(text=footertext)
+      #     loadmsg = message.author.send(embed=embed)
+      #     nums = ['1️⃣','2️⃣','3️⃣']
+      #     for i in range(len(getUserBots(message.author.id))):
+      #       loadmsg.add_reaction(nums[i])
+          
+      #   else:
+      #     embed=discord.Embed(
+      #       title="You have no bots saved!",
+      #       description="Save a bot with **" + prefix + "save** while you have a bot running",
+      #       color=color)
+      #     embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #     embed.set_footer(text=footertext)
+      #     await message.author.send(embed=embed)
+      #     return
+
       if(args[0] == '+list'):
         current_list = botdict.items()
         for i in current_list:
@@ -476,8 +691,8 @@ async def on_message(message):
             inline = True
           )
           embed.add_field(
-          name="**" + prefix + "variant**",
-          value="Sets the variant of the current skin",
+          name="**" + prefix + "style**",
+          value="Sets a skin's style. Usage: " + prefix + "style ghoul trooper",
           inline = True
           )
           embed.add_field(
@@ -511,11 +726,6 @@ async def on_message(message):
             inline = True
           )
           embed.add_field(
-            name="**" + prefix + "search**",
-            value="Searches for the cosmetic (powered by Gummyfn API)",
-            inline = True
-          )
-          embed.add_field(
             name="**" + prefix + "invite**",
             value="Sends the bot's Discord Invite link",
             inline = True
@@ -531,7 +741,7 @@ async def on_message(message):
             inline=False)
           embed.add_field(
           name=f"**Website**", 
-          value="https://atomicxyz.tk/atomicbot/",
+          value=website,
           inline=False)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
@@ -540,21 +750,11 @@ async def on_message(message):
           return
         else:
           embed = discord.Embed(
-            title=f"AtomicBot Help Page",
+            title=f"AtomicBot Help",
             description="Create a bot to see the full commands!",
             color=color
           )
           embed.set_thumbnail(url="https://media.discordapp.net/attachments/836446331992145950/836719691459461180/AtomicLogo.png")
-          embed.add_field(
-            name="**" + prefix + "info**",
-            value="shows the info of the bot",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "search**",
-            value="Searches for the cosmetic (powered by Gummyfn API)",
-            inline = True
-          )
           embed.add_field(
             name="**" + prefix + "start**",
             value="Creates a bot",
@@ -571,6 +771,11 @@ async def on_message(message):
             inline = True
           )
           embed.add_field(
+            name="**" + prefix + "info**",
+            value="shows the info of the bot",
+            inline = True
+          )
+          embed.add_field(
             name="**" + prefix + "help**",
             value="sends this message",
             inline = True
@@ -581,30 +786,40 @@ async def on_message(message):
             inline=False)
           embed.add_field(
           name=f"**Website**", 
-          value="https://atomicxyz.tk/atomicbot/",
+          value=website,
           inline=False)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           
-          await message.author.send(embed=embed)
+          await message.channel.send(embed=embed)
           return
     
       if(args[0] == prefix + 'stop'):
-        del botdict[message.author.id]
-        for task in tasks:
-          task.cancel
-        await client.close(close_http=True,dispatch_close=True)
-        if(client.is_closed):
-          print(crayons.red(f"Bot cancelled {client.user.display_name}"))
-        
-        embeddone = discord.Embed(
-          title=
-          "Bot Cancelled!",
-          description=
-          "Restart Bot by typing " + prefix + "start",
-          color=color)
-        await message.author.send(embed=embeddone)
-        return
+        if(client):
+          del botdict[message.author.id]
+          client_info = {'name' : client.user.display_name, 'id' : client.user.id}
+          deleteCurrentBot(message.author.id, client_info)
+          for task in tasks:
+            task.cancel
+          await client.close(close_http=True,dispatch_close=True)
+          if(client.is_closed):
+            print(crayons.red(f"Bot cancelled {client.user.display_name}"))
+          
+          embeddone = discord.Embed(
+            title=
+            "Bot Cancelled!",
+            description=
+            "Restart Bot by typing " + prefix + "start",
+            color=color)
+          await message.author.send(embed=embeddone)
+          return
+        else:
+          embed = discord.Embed(
+            title = "Error: you don't have a bot running",
+            description = "Create a bot with " + prefix + "start",
+            color=color
+          )
+          await message.channel.send(embed=embed)
 
       if(args[0] == prefix + 'skin'):
         cosmetic = await fetch_cosmetic('AthenaCharacter', command)
@@ -665,122 +880,224 @@ async def on_message(message):
           await message.author.send(embed=embed)
           return
       
-      if(args[0] == prefix + 'variant'):
-        member = client.party.me
-        try:
-          if(args[1] == "material"):
-            await member.set_outfit(
-              asset=member.outfit,
-              variants = member.create_variant(
-                material = int(args[2])
-              ) 
-            )
-          elif(args[1] == "clothing_color"):
-            await member.set_outfit(
-              asset=member.outfit,
-              variants = member.create_variant(
-                clothing_color = int(args[2])
-              ) 
-            )
-          elif(args[1] == "stage"):
-            await member.set_outfit(
-              asset=member.outfit,
-              variants = member.create_variant(
-                parts = int(args[2])
-              ) 
-            )
-          elif(args[1] == "progressive"):
-            await member.set_outfit(
-              asset=member.outfit,
-              variants = member.create_variant(
-                progressive = int(args[2])
-              ) 
-            )
-          elif(args[1] == "particle"):
-            await member.set_outfit(
-              asset=member.outfit,
-              variants = member.create_variant(
-                particle = int(args[2])
-              ) 
-            )
-          elif(args[1] == "emissive"):
-            await member.set_outfit(
-              asset=member.outfit,
-              variants = member.create_variant(
-                emissive = int(args[2])
-              ) 
-            )
-          elif(args[1] == "pattern"):
-            await member.set_outfit(
-              asset=member.outfit,
-              variants = member.create_variant(
-                pattern = int(args[2])
-              ) 
-            )
-          variantName = member.outfit_variants[0]['v']
-          embed = discord.Embed(
-            title="Variant Successfully Changed to " + variantName,
-            description=member.outfit,
-            color=color
-          )
-          thumbnailVar = f"https://benbotfn.tk/cdn/images/{member.outfit}/variant/{str(member.outfit_variants[0]['c'])}/{str(variantName)}.png"
-          embed.set_thumbnail(url=thumbnailVar)
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
+      # if(args[0] == prefix + 'style' or args[0] == prefix + 'variant'):
+      #   member = client.party.me
+      #   try:
+      #     if(args[1] == "material"):
+      #       await member.set_outfit(
+      #         asset=member.outfit,
+      #         variants = member.create_variant(
+      #           material = int(args[2])
+      #         ) 
+      #       )
+      #     elif(args[1] == "clothing_color"):
+      #       await member.set_outfit(
+      #         asset=member.outfit,
+      #         variants = member.create_variant(
+      #           clothing_color = int(args[2])
+      #         ) 
+      #       )
+      #     elif(args[1] == "stage"):
+      #       await member.set_outfit(
+      #         asset=member.outfit,
+      #         variants = member.create_variant(
+      #           parts = int(args[2])
+      #         ) 
+      #       )
+      #     elif(args[1] == "progressive"):
+      #       await member.set_outfit(
+      #         asset=member.outfit,
+      #         variants = member.create_variant(
+      #           progressive = int(args[2])
+      #         ) 
+      #       )
+      #     elif(args[1] == "particle"):
+      #       await member.set_outfit(
+      #         asset=member.outfit,
+      #         variants = member.create_variant(
+      #           particle = int(args[2])
+      #         ) 
+      #       )
+      #     elif(args[1] == "emissive"):
+      #       await member.set_outfit(
+      #         asset=member.outfit,
+      #         variants = member.create_variant(
+      #           emissive = int(args[2])
+      #         ) 
+      #       )
+      #     elif(args[1] == "pattern"):
+      #       await member.set_outfit(
+      #         asset=member.outfit,
+      #         variants = member.create_variant(
+      #           pattern = int(args[2])
+      #         ) 
+      #       )
+      #     variantName = member.outfit_variants[0]['v']
+      #     embed = discord.Embed(
+      #       title="Variant Successfully Changed to " + variantName,
+      #       description=member.outfit,
+      #       color=color
+      #     )
+      #     thumbnailVar = f"https://benbotfn.tk/cdn/images/{member.outfit}/variant/{str(member.outfit_variants[0]['c'])}/{str(variantName)}.png"
+      #     embed.set_thumbnail(url=thumbnailVar)
+      #     embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #     embed.set_footer(text=footertext)
+      #     await message.author.send(embed=embed)
+      #     return
         
-        except Exception as e:
-          print(e)
+      #   except Exception as e:
+      #     print(e)
+      #     embed = discord.Embed(
+      #       title="Error: Invalid Style",
+      #       description="Make sure you type the name correctly!",
+      #       color=color
+      #     )
+      #     embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #     embed.set_footer(text=footertext)
+      #     await message.author.send(embed=embed)
+      #     return
+
+      if(args[0] == prefix + 'search'):
+        try:
+          data1 = getCosmetic(command)
+          data = data1['info']
+          
           embed = discord.Embed(
-            title="Error: Invalid Variant",
-            description="Make sure you type the name correctly!",
+            title=data['name'],
+            description=data['id'],
             color=color
+          )
+          embed.add_field(
+            name="Description",
+            value=data['description'],
+            inline=False
+          )
+          embed.set_thumbnail(url=data1['images']['icon'])
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+        except Exception as e:
+          embed = discord.Embed(
+          title="Error: Search Failed",
+          description=e,
+          color=color
           )
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
-          return
-
       
-      # if(args[0] == prefix + 'friend'):
-      #   embed = discord.Embed(
-      #     title="Variants",
-      #     color=color
-      #   )
-      #   embed.set_author(name="AtomicBot",icon_url=profileimg)
-      #   embed.set_footer(text=footertext)
-      #   await message.author.send(embed=embed)
-      
-      if(args[0] == prefix + 'search'):
-          try:
-            data1 = getCosmetic(command)
-            data = data1['info']
-
+      if(args[0] == prefix + 'style'):
+        cosmetic = await fetch_cosmetic('AthenaCharacter', command)
+        varaints = getVariants(cosmetic.id)
+        options = varaints["options"]
+        try:
+          if(options == None):
             embed = discord.Embed(
-              title=data['name'],
-              description=data['id'],
+            title="There are no styles for that skin",
+            color=color
+            )
+            await message.author.send(embed=embed)
+            return
+          else:
+            embed = discord.Embed(
+              title="Styles for " + cosmetic.name,
               color=color
             )
-            embed.add_field(
-              name="Description",
-              value=data['description'],
-              inline=False
+            await message.author.send(embed=embed)
+            count = 1
+            
+            for style in options:
+              name = style['name']
+              img = style['image']
+              embed2 = discord.Embed(
+                title=name,
+                description=f"Type {count} to equip",
+                color=color
+              )
+              embed2.set_thumbnail(url=img)
+              await message.author.send(embed=embed2)
+              count += 1
+            
+            def check(msg):
+              return msg.content and msg.author.id == message.author.id
+
+            msg = await bot.wait_for('message', check=check)
+            member = client.party.me
+            channel = varaints['channel'].lower()
+            num2 = int(msg.content)
+            if(channel == "material"):
+              await member.set_outfit(
+                asset=cosmetic.id,
+                variants = member.create_variant(
+                  material=num2
+                )
+              ) 
+            elif(channel == "clothingcolor"):
+              await member.set_outfit(
+                asset=cosmetic.id,
+                variants = member.create_variant(
+                  clothing_color = num2
+                ) 
+              )
+            elif(channel == "parts"):
+              await member.set_outfit(
+                asset=cosmetic.id,
+                variants = member.create_variant(
+                  parts = num2
+                ) 
+              )
+            elif(channel == "progressive"):
+              await member.set_outfit(
+                asset=cosmetic.id,
+                variants = member.create_variant(
+                  progressive = num2
+                ) 
+              )
+            elif(channel == "particle"):
+              await member.set_outfit(
+                asset=cosmetic.id,
+                variants = member.create_variant(
+                  particle = num2
+                ) 
+              )
+            elif(channel == "emissive"):
+              await member.set_outfit(
+                asset=cosmetic.id,
+                variants = member.create_variant(
+                  emissive = num2
+                ) 
+              )
+            elif(channel == "pattern"):
+              await member.set_outfit(
+                asset=cosmetic.id,
+                variants = member.create_variant(
+                  pattern = num2
+                ) 
+              )
+            style = options[num2-1]
+            variantName = style['name']
+            embed = discord.Embed(
+              title="Variant Successfully Changed to " + variantName,
+              description=member.outfit,
+              color=color
             )
-            embed.set_thumbnail(url=data1['images']['icon'])
+            
+            thumbnailVar = style['image']
+            embed.set_thumbnail(url=thumbnailVar)
             embed.set_author(name="AtomicBot",icon_url=profileimg)
             embed.set_footer(text=footertext)
-            await message.channel.send(embed=embed)
-          except Exception as e:
-            embed = discord.Embed(
-            title="Error: Search Failed",
+            await message.author.send(embed=embed)
+            return
+              
+        except Exception as e:
+          embed = discord.Embed(
+            title="There are no styles for that skin",
             description=e,
             color=color
-            )
-            embed.set_author(name="AtomicBot",icon_url=profileimg)
-            embed.set_footer(text=footertext)
-            await message.channel.send(embed=embed)
-        
+          )
+          await message.author.send(embed=embed)
+
+      
       if(args[0] == prefix + 'info'):
         embed = discord.Embed(
           title="**AtomicBot**",
@@ -788,7 +1105,7 @@ async def on_message(message):
         )
         embed.add_field(
           name="**Commands**",
-          value="Type " + prefix + " help for help",
+          value="Type " + prefix + "help for help",
           inline=False
         )
         embed.add_field(
@@ -808,7 +1125,7 @@ async def on_message(message):
         )
         embed.add_field(
           name="**Website (With Invite Links)**",
-          value="https://atomicxyz.tk/atomicbot/",
+          value=website,
           inline=False
         )
         embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -1142,19 +1459,52 @@ async def on_message(message):
           description=
           "Use " + prefix + "start to get a bot!",
           color=color)
-        await message.author.send(embed=embeddone)
+        await message.channel.send(embed=embeddone)
         return
     
-    except: 
+    except Exception as e: 
       embed = discord.Embed(
           title = "Error: Incorrect Command",
-          description = "Make a bot by typing " + prefix + "start",
+          description = "Please check for typos or report this bug to AtomicXYZ",
           color=color
         )
-      await message.author.send(embed=embed)
+      await message.channel.send(embed=embed)
       return
-      
-      
+    await bot.process_commands(message)
+    
+
+@bot.command()
+async def extract(ctx, path = None):
+        
+        if path is None:
+                await ctx.send('smh')
+        
+        elif "/Sounds/" in path:
+                epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
+                with open("audio.ogg", "wb") as o:
+                        o.write(epic.content)
+                        o.close
+                await ctx.send(file=discord.File('audio.ogg'))
+                os.remove('audio.ogg')
+        
+        elif ".mp4" in path:
+                epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
+                with open("video.mp4", "wb") as o:
+                        o.write(epic.content)
+                        o.close
+                await ctx.send(file=discord.File('video.mp4'))
+                os.remove('video.mp4')                
+                
+
+        else:
+                epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
+                with open("image.png", "wb") as o:
+                        o.write(epic.content)
+                        o.close
+                await ctx.send(file=discord.File('image.png'))
+                os.remove('image.png')
+
+        
 # bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I')
 
 bot.run(os.environ['DISCORD_TOKEN'])
