@@ -267,13 +267,14 @@ async def edit_and_keep_client_member(self):
 loop = asyncio.get_event_loop()
 
 prefix = 'a!'
+prefixs = "a!","A!"
 
 color = 0xff0000
-footertext = "AtomicBot v2.0 by AtomicXYZ"
+footertext = "AtomicBot v2.1 by AtomicXYZ"
 
 intents = discord.Intents.default()
 
-bot = commands.Bot(command_prefix=prefix, intents=intents)
+bot = commands.Bot(command_prefix=prefixs, intents=intents)
 
 bot.remove_command('help')
 
@@ -975,7 +976,7 @@ async def on_message(message):
           embed.set_thumbnail(url=data1['images']['icon'])
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
+          await message.channel.send(embed=embed)
         except Exception as e:
           embed = discord.Embed(
           title="Error: Search Failed",
@@ -984,7 +985,7 @@ async def on_message(message):
           )
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
+          await message.channel.send(embed=embed)
       
       if(args[0] == prefix + 'style'):
         cosmetic = await fetch_cosmetic('AthenaCharacter', command)
@@ -1475,36 +1476,38 @@ async def on_message(message):
 
 @bot.command()
 async def extract(ctx, path = None):
-        
-        if path is None:
-                await ctx.send('smh')
-        
-        elif "/Sounds/" in path:
-                epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
-                with open("audio.ogg", "wb") as o:
-                        o.write(epic.content)
-                        o.close
-                await ctx.send(file=discord.File('audio.ogg'))
-                os.remove('audio.ogg')
-        
-        elif ".mp4" in path:
-                epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
-                with open("video.mp4", "wb") as o:
-                        o.write(epic.content)
-                        o.close
-                await ctx.send(file=discord.File('video.mp4'))
-                os.remove('video.mp4')                
-                
+        try:
+          if path is None:
+                  await ctx.send('smh')
+          
+          elif "/Sounds/" in path:
+                  epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
+                  with open("audio.ogg", "wb") as o:
+                          o.write(epic.content)
+                          o.close
+                  await ctx.send(file=discord.File('audio.ogg'))
+                  os.remove('audio.ogg')
+          
+          elif ".mp4" in path:
+                  epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
+                  with open("video.mp4", "wb") as o:
+                          o.write(epic.content)
+                          o.close
+                  await ctx.send(file=discord.File('video.mp4'))
+                  os.remove('video.mp4')                
+                  
 
-        else:
-                epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
-                with open("image.png", "wb") as o:
-                        o.write(epic.content)
-                        o.close
-                await ctx.send(file=discord.File('image.png'))
-                os.remove('image.png')
+          else:
+                  epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
+                  with open("image.png", "wb") as o:
+                          o.write(epic.content)
+                          o.close
+                  await ctx.send(file=discord.File('image.png'))
+                  os.remove('image.png')
+        except Exception as e:
+          await ctx.send(e)
 
         
-# bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I')
+bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I')
 
-bot.run(os.environ['DISCORD_TOKEN'])
+# bot.run(os.environ['DISCORD_TOKEN'])
