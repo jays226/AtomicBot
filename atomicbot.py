@@ -10,6 +10,9 @@ import fortnitepy
 import requests
 from discord.ext import commands
 import pymongo
+from datetime import date
+
+from requests.api import get
 
 website = "https://atomicxyz.tk/atomicbot/"
 
@@ -94,6 +97,41 @@ def getCosmetic(cosmetic):
     return data
   except:
     return None
+
+def getBR():
+    url = "https://fortnite-api.com/v2/news/br"
+
+    headers = {
+        'content-type': "application/json",
+        'cache-control': "no-cache",
+        }
+
+    response = requests.request("GET", url, headers=headers)
+
+    data = json.loads(response.text)
+
+    return data
+
+def getStats(name, device):
+    url = "https://fortnite-api.com/v1/stats/br/v2"
+
+    params = {
+      "name" : name,
+      "accountType" : device,
+      "timeWindow" : "lifetime",
+      "image" : "all"
+    }
+
+    headers = {
+        'content-type': "application/json",
+        'cache-control': "no-cache",
+        }
+
+    response = requests.request("GET", url, headers=headers, params=params)
+
+    data = json.loads(response.text)
+
+    return data['data']
 
 def getVariants(id):
     url = "https://fortnite-api.com/v2/cosmetics/br/search/"
@@ -270,7 +308,7 @@ prefix = 'a!'
 prefixs = "a!","A!"
 
 color = 0xff0000
-footertext = "AtomicBot v2.1 by AtomicXYZ"
+footertext = "AtomicBot v2.2 by AtomicXYZ"
 
 intents = discord.Intents.default()
 
@@ -297,7 +335,7 @@ async def fetch_cosmetic(type_, name) -> None:
                 backendType=type_
             )
       except (BenBotAsync.exceptions.NotFound):
-        pass
+        data = None
     return data
 
 async def set_and_update_party_prop(self, schema_key: str, new_value: Any) -> None:
@@ -318,7 +356,7 @@ def getBots():
   return data
 
 emoteseconds = 60
-expiretime = 30
+expiretime = 60
 profileimg = "https://cdn.discordapp.com/avatars/829050201648922645/d8d62960d600af3975b61735ccc5e90c.png?size=128"
 
 @bot.event
@@ -727,6 +765,36 @@ async def on_message(message):
             inline = True
           )
           embed.add_field(
+            name="**" + prefix + "cid**",
+            value="Sets the bot's skin via CID",
+            inline = True
+          )
+          embed.add_field(
+            name="**" + prefix + "eid**",
+            value="Sets the bot's emote via EID",
+            inline = True
+          )
+          embed.add_field(
+            name="**" + prefix + "pid**",
+            value="Sets the bot's pickaxe via PID",
+            inline = True
+          )
+          embed.add_field(
+            name="**" + prefix + "bid**",
+            value="Sets the bot's backpack via BID",
+            inline = True
+          )
+          embed.add_field(
+            name="**" + prefix + "news**",
+            value="Sends the current Battle Royale news",
+            inline = True
+          )
+          embed.add_field(
+            name="**" + prefix + "stats**",
+            value="Gets the stats for the given Epic Games username",
+            inline = True
+          )
+          embed.add_field(
             name="**" + prefix + "invite**",
             value="Sends the bot's Discord Invite link",
             inline = True
@@ -764,6 +832,16 @@ async def on_message(message):
           embed.add_field(
             name="**" + prefix + "stop**",
             value="Cancels your bot",
+            inline = True
+          )
+          embed.add_field(
+            name="**" + prefix + "news**",
+            value="Sends the current Battle Royale news",
+            inline = True
+          )
+          embed.add_field(
+            name="**" + prefix + "stats**",
+            value="Gets the stats for the given Epic Games username",
             inline = True
           )
           embed.add_field(
@@ -852,6 +930,35 @@ async def on_message(message):
           await message.author.send(embed=embed)
           return
       
+      if(args[0] == prefix + 'cid'):
+        member = client.party.me
+        try:
+          await member.set_outfit(
+            asset=args[1],
+            variants = None
+          )
+          embed = discord.Embed(
+            title="Skin Successfully Changed",
+            description=member.emote,
+            color=color
+          )
+          await asyncio.sleep(1)
+          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
+        except:
+          embed = discord.Embed(
+            title="Error: Invalid Skin/ID",
+            description="Make sure you type the name correctly!",
+            color=color
+          )
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
+      
       if(args[0] == prefix + 'pickaxe'):
         cosmetic = await fetch_cosmetic('AthenaPickaxe', command)
         member = client.party.me
@@ -881,6 +988,59 @@ async def on_message(message):
           await message.author.send(embed=embed)
           return
       
+      if(args[0] == prefix + 'pid'):
+        member = client.party.me
+        try:
+          await member.set_pickaxe(
+            asset=args[1],
+          )
+          embed = discord.Embed(
+            title="Pickaxe Successfully Changed",
+            description=member.pickaxe,
+            color=color
+          )
+          await asyncio.sleep(1)
+          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.pickaxe}/icon.png")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
+        except:
+          embed = discord.Embed(
+            title="Error: Invalid Pickaxe/ID",
+            description="Make sure you type the name correctly!",
+            color=color
+          )
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
+
+      if(args[0] == prefix + 'brnews' or args[0] == prefix + 'news'):
+        today = date.today()
+        d4 = today.strftime("%b-%d-%Y")
+        time = d4.split('-')
+        d = ""
+        d+=time[0] + " "
+        d+=time[1] + ", "
+        d+=time[2]
+        img = getBR()['data']['image']
+        embed = discord.Embed(
+            title="Battle Royale News for " + d,
+            color=color
+        )
+        embed.set_image(url=img)
+        embed.set_author(name="AtomicBot",icon_url=profileimg)
+        embed.set_footer(text=footertext)
+        await message.channel.send(embed=embed)
+        return
+      
+      if(args[0] == prefix + 'stats'):
+        name = getStats(args[1],"epic")['account']['name']
+        img = getStats(args[1],"epic")['image']
+        await message.channel.send(img)
+        return
+
       # if(args[0] == prefix + 'style' or args[0] == prefix + 'variant'):
       #   member = client.party.me
       #   try:
@@ -1341,7 +1501,36 @@ async def on_message(message):
           await message.author.send(embed=embed)
           return
       
-      if(args[0] == prefix + 'backpack'):
+      if(args[0] == prefix + 'eid'):
+        member = client.party.me
+        try:
+          await member.set_emote(
+            asset=args[1],
+            run_for=emoteseconds
+          )
+          embed = discord.Embed(
+          title="Emote Successfully Changed",
+          description=member.emote,
+          color=color
+          )
+          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.emote}/icon.png")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
+          
+        except:
+          embed = discord.Embed(
+            title="Error: Invalid Emote/ID",
+            description="Make sure you type the name correctly!",
+            color=color
+          )
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
+      
+      if(args[0] == prefix + 'backpack' or args[0] == prefix + 'backbling'):
         cosmetic = await fetch_cosmetic('AthenaBackpack', command)
         member = client.party.me
         try:
@@ -1352,6 +1541,34 @@ async def on_message(message):
           embed = discord.Embed(
             title="Backpack Successfully Changed to " + cosmetic.name,
             description=cosmetic.id,
+            color=color
+          )
+          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.backpack}/icon.png")
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
+        except:
+          embed = discord.Embed(
+            title="Error: Invalid Backpack",
+            description="Make sure you type the name correctly!",
+            color=color
+          )
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
+      
+      if(args[0] == prefix + 'bid'):
+        member = client.party.me
+        try:
+          await member.set_backpack(
+            asset=args[1],
+            variants = None
+          )
+          embed = discord.Embed(
+            title="Backpack Successfully Changed",
+            description=member.backpack,
             color=color
           )
           embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.backpack}/icon.png")
@@ -1466,7 +1683,7 @@ async def on_message(message):
     except Exception as e: 
       embed = discord.Embed(
           title = "Error: Incorrect Command",
-          description = "Please check for typos or report this bug to AtomicXYZ",
+          description = f"{e}\nPlease check for typos or report this bug to AtomicXYZ",
           color=color
         )
       await message.channel.send(embed=embed)
@@ -1508,6 +1725,6 @@ async def extract(ctx, path = None):
           await ctx.send(e)
 
         
-# bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I')
+bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I')
 
-bot.run(os.environ['DISCORD_TOKEN'])
+# bot.run(os.environ['DISCORD_TOKEN'])
