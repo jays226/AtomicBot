@@ -765,23 +765,18 @@ async def on_message(message):
             inline = True
           )
           embed.add_field(
-            name="**" + prefix + "cid**",
-            value="Sets the bot's skin via CID",
+            name="**" + prefix + "cid/eid/pid/bid**",
+            value="Sets the bot's cosmetic via ID",
             inline = True
           )
           embed.add_field(
-            name="**" + prefix + "eid**",
-            value="Sets the bot's emote via EID",
+            name="**" + prefix + "match**",
+            value="Sets the bot to in-match status",
             inline = True
           )
           embed.add_field(
-            name="**" + prefix + "pid**",
-            value="Sets the bot's pickaxe via PID",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "bid**",
-            value="Sets the bot's backpack via BID",
+            name="**" + prefix + "unmatch**",
+            value="Cancels the bot's in-match status",
             inline = True
           )
           embed.add_field(
@@ -1311,6 +1306,61 @@ async def on_message(message):
           embed = discord.Embed(
             title="Error: Incorrect Command",
             description="Make sure the bot is not already in the ready state!",
+            color=color
+          )
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
+      
+      if(args[0] == prefix + 'match'):
+        member = client.party.me
+        try:
+          if(args[1]):
+            await member.set_in_match(players_left=int(args[1]))
+            embed = discord.Embed(
+              title="Bot set to In-Match Status with " + args[1] + " players remaining",
+              color=color
+            )
+            embed.set_author(name="AtomicBot",icon_url=profileimg)
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+          else:
+            await member.set_in_match(players_left=100)
+            embed = discord.Embed(
+              title="Bot set to In-Match Status with 100 players remaining",
+              color=color
+            )
+            embed.set_author(name="AtomicBot",icon_url=profileimg)
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+          return
+        except:
+          embed = discord.Embed(
+            title="Error: Incorrect Command",
+            description="Please provide a number or players remaining",
+            color=color
+          )
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
+      
+      if(args[0] == prefix + 'unmatch'):
+        member = client.party.me
+        try:
+          await member.clear_in_match()
+          embed = discord.Embed(
+            title="In-Match Status Cancelled",
+            color=color
+          )
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
+        except:
+          embed = discord.Embed(
+            title="Error: Incorrect Command",
             color=color
           )
           embed.set_author(name="AtomicBot",icon_url=profileimg)
