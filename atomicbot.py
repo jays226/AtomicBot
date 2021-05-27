@@ -9,7 +9,6 @@ import discord
 import fortnitepy
 import requests
 from discord.ext import commands
-import pymongo
 from datetime import datetime, timedelta, date
 from shop import getShop, makeImage
 import time
