@@ -23,43 +23,43 @@ website = "https://atomicxyz.tk/atomicbot/"
 
 #SAVING BOTS
 
-mycol = mydb["user_bots"]
+# mycol = mydb["user_bots"]
 
-def getUserBots(user_id):
-  bots = []
-  documents = list(mycol.find())
-  for doc in documents:
-      if(doc['user_id'] == user_id):
-          bots.append(doc)
-  print(bots)
-  return bots
+# def getUserBots(user_id):
+#   bots = []
+#   documents = list(mycol.find())
+#   for doc in documents:
+#       if(doc['user_id'] == user_id):
+#           bots.append(doc)
+#   print(bots)
+#   return bots
 
-def storeSavedBot(user_id,auths):
-    client = {"user_id" : user_id, "auths" : auths}
-    mycol.insert_one(client)
-    print(crayons.green("Saved Bot in Database"))
+# def storeSavedBot(user_id,auths):
+#     client = {"user_id" : user_id, "auths" : auths}
+#     mycol.insert_one(client)
+#     print(crayons.green("Saved Bot in Database"))
 
-def getSavedBot(user_id):
-  documents = list(mycol.find())
-  for doc in documents:
-      if(doc['user_id'] == user_id):
-          print(doc['auths'])
+# def getSavedBot(user_id):
+#   documents = list(mycol.find())
+#   for doc in documents:
+#       if(doc['user_id'] == user_id):
+#           print(doc['auths'])
 
-def deleteSavedBot(user_id):
-    mycol.delete_one({'user_id' : user_id})
-    print(f"Deleted {user_id}")
+# def deleteSavedBot(user_id):
+#     mycol.delete_one({'user_id' : user_id})
+#     print(f"Deleted {user_id}")
 
 
-#CURRENT BOTS MONGODB
-current_bots = mydb['current_bots']
-def storeCurrentBot(user_id,info):
-    # x = {"user_id" : user_id, "client_info" : info}
-    # current_bots.insert_one(x)
-    print(crayons.green("Saved Current UserId/Bot in Database"))
+# #CURRENT BOTS MONGODB
+# current_bots = mydb['current_bots']
+# def storeCurrentBot(user_id,info):
+#     # x = {"user_id" : user_id, "client_info" : info}
+#     # current_bots.insert_one(x)
+#     print(crayons.green("Saved Current UserId/Bot in Database"))
 
-def deleteCurrentBot(user_id, info):
-    # current_bots.delete_one({'user_id' : user_id, 'client_info' : info})
-    print("Deleted current_bots")
+# def deleteCurrentBot(user_id, info):
+#     # current_bots.delete_one({'user_id' : user_id, 'client_info' : info})
+#     print("Deleted current_bots")
 
 #EPIC GAMES REQUESTS
 def getDisplayName(account_id):
