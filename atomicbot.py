@@ -488,7 +488,7 @@ async def on_message(message):
         if(client.is_ready()):
           botdict[message.author.id] = client
           client_info = {'name' : client.user.display_name, 'id' : client.user.id}
-          storeCurrentBot(message.author.id, client_info)
+#           storeCurrentBot(message.author.id, client_info)
           savedauths[message.author.id] = {
             'device_id' : device,
             'account_id' : account,
@@ -542,7 +542,7 @@ async def on_message(message):
             task.cancel
           del botdict[message.author.id]
           client_info = {'name' : client.user.display_name, 'id' : client.user.id}
-          deleteCurrentBot(message.author.id, client_info)
+#           deleteCurrentBot(message.author.id, client_info)
           del savedauths[message.author.id]
           await client.close(close_http=True,dispatch_close=True)
           if(client.is_closed):
@@ -882,7 +882,7 @@ async def on_message(message):
         if(client):
           del botdict[message.author.id]
           client_info = {'name' : client.user.display_name, 'id' : client.user.id}
-          deleteCurrentBot(message.author.id, client_info)
+#           deleteCurrentBot(message.author.id, client_info)
           for task in tasks:
             task.cancel
           await client.close(close_http=True,dispatch_close=True)
