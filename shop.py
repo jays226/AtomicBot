@@ -95,7 +95,7 @@ def makeImage(shop, ad1, ad2):
         if (w > width):
             width = w
 
-    width += 2000
+
     height = (len(shop) * 1600)
     print(f"Shop Size: {width} x {height}")
 
@@ -137,11 +137,11 @@ def makeImage(shop, ad1, ad2):
         itemY = sectionY+160
         itemX = 185
         priceX = itemX
-        size = 1000
+        size = 900
 
         for j in range(len(data)):
             item = data[j]
-            if(j==8):
+            if(j==7):
                 itemY += size + 110
                 itemX = 185
                 sectionY += size + 100
@@ -167,7 +167,7 @@ def makeImage(shop, ad1, ad2):
             img.paste(down, (itemX, itemY), down)
 
             name = item['name']
-            font = ImageFont.truetype("./assets/BurbankBigRegularBlack.otf", 100)
+            font = ImageFont.truetype("./assets/BurbankBigRegularBlack.otf", 75)
             nWidth, nHeight = draw.textsize(name, font=font)
             
             fsize = 60
@@ -176,12 +176,12 @@ def makeImage(shop, ad1, ad2):
                 font = ImageFont.truetype("./assets/BurbankBigRegularBlack.otf", fsize)
                 nWidth, h = draw.textsize(name, font=font)
 
-            draw.text((itemX+450-(nWidth/2), itemY+itemImg.width-100), name, fill="white", font=font)
+            draw.text((itemX+450-(nWidth/2), itemY+itemImg.width-130), name, fill="white", font=font)
            
             
 
             price = str(item['price'])
-            font = ImageFont.truetype("./assets/BurbankBigRegularBlack.otf", 150)
+            font = ImageFont.truetype("./assets/BurbankBigRegularBlack.otf", 90)
             nWidth, nHeight = draw.textsize(price, font=font)
             priceX = itemX+450-(nWidth/2)
             draw.text((priceX, itemY+itemImg.width+10), price, fill="white", font=font)
@@ -201,8 +201,8 @@ def makeImage(shop, ad1, ad2):
     print(crayons.green("Loading Shop..."))
     day2 = today.strftime("%b_%d_%Y")
     print(crayons.green("Generated Shop!"))
-    img.thumbnail((1080, 1080))
-    img.save(f"./shops/itemshop_{day2}.png")
+    img.thumbnail((3000,3000))
+    img.save(f"shops/itemshop_{day2}.png")
     print(crayons.green(f"Shop Image Saved as: itemshop_{day2}.png"))
     print(crayons.yellow(f"Created by AtomicXYZ"))
     time.sleep(10)
