@@ -9,7 +9,6 @@ import discord
 import fortnitepy
 import requests
 from discord.ext import commands
-import pymongo
 from datetime import date
 import datetime
 from shop import getShop, makeImage
@@ -18,9 +17,9 @@ from requests.api import get
 
 website = "https://atomicxyz.tk/atomicbot/"
 
-myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+# myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 
-mydb = myclient['atomicbot_db']
+# mydb = myclient['atomicbot_db']
 
 #SAVING BOTS
 
