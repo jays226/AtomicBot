@@ -548,7 +548,10 @@ async def on_message(message):
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           
-          embed2 = discord.Embed(title="Type " + prefix + "help for the list of commands",color=color)
+          embed2 = discord.Embed(
+            title="Type " + prefix + "help for the list of commands",
+            description="**Watch this video if you need help: https://youtu.be/YPZMTIET3S8**",
+            color=color)
           embed2.set_author(name="Help",icon_url="https://hotemoji.com/images/dl/1/question-mark-emoji-by-twitter.png")
 
           await message.author.send(embed=embed)
@@ -698,12 +701,22 @@ async def on_message(message):
         current_list = botdict.items()
         for i in current_list:
           print(i)
+      
+      if(args[0] == '+send_update'):
+        for i in current_list.keys():
+          print(i)
+          try:
+            await i.send("Notice: the bot will have an update soon. Your bot will go offline temporarily")
+            print("update notice sent")
+          except:
+            print("update notice error")
+            continue
 
       if(args[0] == prefix + 'help'):
         if(client):
           embed = discord.Embed(
             title=f"Help Page for {client.user.display_name}",
-            description="Commands must be sent in DMs",
+            description="Commands must be sent in DMs\n**Watch this video if you need help: https://youtu.be/YPZMTIET3S8**",
             color=color
           )
           embed.add_field(
@@ -856,7 +869,7 @@ async def on_message(message):
         else:
           embed = discord.Embed(
             title=f"AtomicBot Help",
-            description="Create a bot to see the full commands!",
+            description="Create a bot to see the full commands!\n**Watch this video if you need help: https://youtu.be/YPZMTIET3S8**",
             color=color
           )
           embed.set_thumbnail(url="https://media.discordapp.net/attachments/836446331992145950/836719691459461180/AtomicLogo.png")
@@ -914,7 +927,7 @@ async def on_message(message):
           await message.channel.send(embed=embed)
           return
     
-      if(args[0] == prefix + 'stop'):
+      if(args[0] == prefix + 'stop' or args[0] == prefix + 'stopbot'):
         if(client):
           del botdict[message.author.id]
           client_info = {'name' : client.user.display_name, 'id' : client.user.id}
@@ -1429,6 +1442,28 @@ async def on_message(message):
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
+
+      if(args[0] == prefix + 'clearemote'):
+        member = client.party.me
+        try:
+          await member.clear_emote()
+          embed = discord.Embed(
+            title="Emote Cleared",
+            color=color
+          )
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
+        except:
+          embed = discord.Embed(
+            title="Error",
+            color=color
+          )
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          await message.author.send(embed=embed)
+          return
       
       if(args[0] == prefix + 'sitout'):
         member = client.party.me
@@ -1795,7 +1830,7 @@ async def on_message(message):
     except Exception as e: 
       embed = discord.Embed(
           title = "Error: Incorrect Command",
-          description = f"{e}\nPlease check for typos or report this bug to AtomicXYZ",
+          description = f"Please check for typos or report this bug to AtomicXYZ\nError: {e}",
           color=color
         )
       await message.channel.send(embed=embed)
