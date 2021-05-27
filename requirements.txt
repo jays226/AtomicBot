@@ -4,6 +4,6 @@ aiohttp
 BenBotAsync
 asyncio
 fortnitepy
+pillow
 requests
-pymongo
 datetime

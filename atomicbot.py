@@ -11,6 +11,8 @@ import requests
 from discord.ext import commands
 import pymongo
 from datetime import date
+import datetime
+from shop import getShop, makeImage
 
 from requests.api import get
 
@@ -308,7 +310,7 @@ prefix = 'a!'
 prefixs = "a!","A!"
 
 color = 0xff0000
-footertext = "AtomicBot v2.2 by AtomicXYZ"
+footertext = "AtomicBot v2.3 by AtomicXYZ"
 
 intents = discord.Intents.default()
 
@@ -364,6 +366,15 @@ async def on_ready():
   print('Logged in')
   while True:
     try:
+      today = date.today()
+      current_time = today.strftime("%H")
+      day2 = today.strftime("%b_%d_%Y")
+      if(current_time == "07" and not os.path.exists(f"./shops/itemshop_{day2}.png")):
+        with open('./config.json') as f:
+          config = json.load(f)
+          shop = getShop(config['auth'])
+          makeImage(shop, config['ad1'], config['ad2'])
+      await asyncio.sleep(10)
       await bot.change_presence(activity=discord.Game(name="made by AtomicXYZ"))
       await asyncio.sleep(10)
       await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=str(len(bot.guilds)) + " Servers"))
@@ -1031,8 +1042,8 @@ async def on_message(message):
         return
       
       if(args[0] == prefix + 'stats'):
-        name = getStats(args[1],"epic")['account']['name']
-        img = getStats(args[1],"epic")['image']
+        name = getStats(command,"epic")['account']['name']
+        img = getStats(command,"epic")['image']
         await message.channel.send(img)
         return
 
@@ -1112,6 +1123,19 @@ async def on_message(message):
       #     embed.set_footer(text=footertext)
       #     await message.author.send(embed=embed)
       #     return
+
+      if(args[0] == prefix + 'shop'):
+        today = date.today()
+        day = today.strftime("%b_%d_%Y")
+        day2 = today.strftime("%b %d %Y")
+        embed = discord.Embed(
+          title = "Item Shop for " + day2,
+          color=color
+        )
+        await message.channel.send(embed=embed)
+        file = discord.File(f"shops/itemshop_{day}.png", filename="itemshop_{day}.png")
+        embed.set_image(url=f"attachment://itemshop_{day}.png")
+        await message.channel.send(file=file)
 
       if(args[0] == prefix + 'search'):
         try:
