@@ -7,7 +7,6 @@ from datetime import date
 import crayons
 import time
 
-
 today = date.today()
 
 day = today.strftime("Item Shop - %b %d, %Y")
@@ -21,13 +20,12 @@ def getShop(auth):
 
     querystring = {"lang":"en","renderData":"true"}
 
-    payload = "{\"grant_type\" : \"account_id\"}"
     headers = {
         'authorization': auth,
         }
 
     try:
-        response = requests.request("GET", url, data=payload, headers=headers, params=querystring)
+        response = requests.request("GET", url, headers=headers, params=querystring)
         
         data = json.loads(response.text)
 
@@ -97,7 +95,7 @@ def makeImage(shop, ad1, ad2):
         if (w > width):
             width = w
 
-
+    width += 2000
     height = (len(shop) * 1600)
     print(f"Shop Size: {width} x {height}")
 
@@ -139,11 +137,11 @@ def makeImage(shop, ad1, ad2):
         itemY = sectionY+160
         itemX = 185
         priceX = itemX
-        size = 900
+        size = 1000
 
         for j in range(len(data)):
             item = data[j]
-            if(j==7):
+            if(j==8):
                 itemY += size + 110
                 itemX = 185
                 sectionY += size + 100
@@ -169,7 +167,7 @@ def makeImage(shop, ad1, ad2):
             img.paste(down, (itemX, itemY), down)
 
             name = item['name']
-            font = ImageFont.truetype("./assets/BurbankBigRegularBlack.otf", 75)
+            font = ImageFont.truetype("./assets/BurbankBigRegularBlack.otf", 100)
             nWidth, nHeight = draw.textsize(name, font=font)
             
             fsize = 60
@@ -178,12 +176,12 @@ def makeImage(shop, ad1, ad2):
                 font = ImageFont.truetype("./assets/BurbankBigRegularBlack.otf", fsize)
                 nWidth, h = draw.textsize(name, font=font)
 
-            draw.text((itemX+450-(nWidth/2), itemY+itemImg.width-115), name, fill="white", font=font)
+            draw.text((itemX+450-(nWidth/2), itemY+itemImg.width-100), name, fill="white", font=font)
            
             
 
             price = str(item['price'])
-            font = ImageFont.truetype("./assets/BurbankBigRegularBlack.otf", 90)
+            font = ImageFont.truetype("./assets/BurbankBigRegularBlack.otf", 150)
             nWidth, nHeight = draw.textsize(price, font=font)
             priceX = itemX+450-(nWidth/2)
             draw.text((priceX, itemY+itemImg.width+10), price, fill="white", font=font)

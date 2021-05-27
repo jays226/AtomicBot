@@ -9,9 +9,10 @@ import discord
 import fortnitepy
 import requests
 from discord.ext import commands
-from datetime import date
-import datetime
+import pymongo
+from datetime import datetime, timedelta, date
 from shop import getShop, makeImage
+import time
 
 from requests.api import get
 
@@ -21,7 +22,7 @@ website = "https://atomicxyz.tk/atomicbot/"
 
 # mydb = myclient['atomicbot_db']
 
-#SAVING BOTS
+# #SAVING BOTS
 
 # mycol = mydb["user_bots"]
 
@@ -344,6 +345,25 @@ async def set_and_update_party_prop(self, schema_key: str, new_value: Any) -> No
 
     await self.party.patch(updated=prop)
 
+async def send_shop():
+  with open('./config.json') as f:
+    config = json.load(f)
+    shop = getShop(config['auth'])
+    makeImage(shop, config['ad1'], config['ad2'])
+    print("Printing Item Shop to channel")
+  today = date.today()
+  day = today.strftime("%b_%d_%Y")
+  day2 = today.strftime("%b %d %Y")
+  embed = discord.Embed(
+    title = "Item Shop for " + day2,
+    color=color
+  )
+  channel = bot.get_channel(803080074396041218)
+  await channel.send(embed=embed)
+  file = discord.File(f"shops/itemshop_{day}.png", filename="itemshop_{day}.png")
+  embed.set_image(url=f"attachment://itemshop_{day}.png")
+  await channel.send(file=file)
+
 botdict = {}
 savedauths = {}
 
@@ -365,15 +385,12 @@ async def on_ready():
   print('Logged in')
   while True:
     try:
-      today = date.today()
-      current_time = today.strftime("%H")
-      day2 = today.strftime("%b_%d_%Y")
-      if(current_time == "07" and not os.path.exists(f"./shops/itemshop_{day2}.png")):
-        with open('./config.json') as f:
-          config = json.load(f)
-          shop = getShop(config['auth'])
-          makeImage(shop, config['ad1'], config['ad2'])
-      await asyncio.sleep(10)
+      today = datetime.utcnow()
+      hour = today.strftime("%H %M")
+      print(hour)
+      if(hour == "00 01" or hour == "24 01" or hour == "24 02" or hour == "00 02"):
+        await send_shop()
+        await asyncio.sleep(60)
       await bot.change_presence(activity=discord.Game(name="made by AtomicXYZ"))
       await asyncio.sleep(10)
       await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=str(len(bot.guilds)) + " Servers"))
@@ -382,7 +399,8 @@ async def on_ready():
       await asyncio.sleep(10)
       await bot.change_presence(activity=discord.Game(name=f"{len(botdict)} bots online"))
       await asyncio.sleep(10)
-    except:
+    except Exception as e:
+      print(e)
       continue
 
 @bot.event
@@ -488,7 +506,7 @@ async def on_message(message):
         if(client.is_ready()):
           botdict[message.author.id] = client
           client_info = {'name' : client.user.display_name, 'id' : client.user.id}
-#           storeCurrentBot(message.author.id, client_info)
+          # storeCurrentBot(message.author.id, client_info)
           savedauths[message.author.id] = {
             'device_id' : device,
             'account_id' : account,
@@ -542,7 +560,7 @@ async def on_message(message):
             task.cancel
           del botdict[message.author.id]
           client_info = {'name' : client.user.display_name, 'id' : client.user.id}
-#           deleteCurrentBot(message.author.id, client_info)
+          # deleteCurrentBot(message.author.id, client_info)
           del savedauths[message.author.id]
           await client.close(close_http=True,dispatch_close=True)
           if(client.is_closed):
@@ -882,7 +900,7 @@ async def on_message(message):
         if(client):
           del botdict[message.author.id]
           client_info = {'name' : client.user.display_name, 'id' : client.user.id}
-#           deleteCurrentBot(message.author.id, client_info)
+          # deleteCurrentBot(message.author.id, client_info)
           for task in tasks:
             task.cancel
           await client.close(close_http=True,dispatch_close=True)
@@ -1124,17 +1142,20 @@ async def on_message(message):
       #     return
 
       if(args[0] == prefix + 'shop'):
-        today = date.today()
-        day = today.strftime("%b_%d_%Y")
-        day2 = today.strftime("%b %d %Y")
-        embed = discord.Embed(
-          title = "Item Shop for " + day2,
-          color=color
-        )
-        await message.channel.send(embed=embed)
-        file = discord.File(f"shops/itemshop_{day}.png", filename="itemshop_{day}.png")
-        embed.set_image(url=f"attachment://itemshop_{day}.png")
-        await message.channel.send(file=file)
+        try:
+          today = date.today()
+          day = today.strftime("%b_%d_%Y")
+          day2 = today.strftime("%b %d %Y")
+          embed = discord.Embed(
+            title = "Item Shop for " + day2,
+            color=color
+          )
+          await message.channel.send(embed=embed)
+          file = discord.File(f"shops/itemshop_{day}.png", filename="itemshop_{day}.png")
+          embed.set_image(url=f"attachment://itemshop_{day}.png")
+          await message.channel.send(file=file)
+        except:
+          message.channel.send('This command requires the `Attach Files` permission')
 
       if(args[0] == prefix + 'search'):
         try:
