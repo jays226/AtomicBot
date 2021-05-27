@@ -9,6 +9,7 @@ import discord
 import fortnitepy
 import requests
 from discord.ext import commands
+import pymongo
 from datetime import datetime, timedelta, date
 from shop import getShop, makeImage
 import time
@@ -806,6 +807,16 @@ async def on_message(message):
             value="Cancels the bot's in-match status",
             inline = True
           )
+          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embed.set_footer(text=footertext)
+          
+          await message.author.send(embed=embed)
+
+          embed = discord.Embed(
+            title=f"Help Page 2",
+            description="Utility Commands",
+            color=color
+          )
           embed.add_field(
             name="**" + prefix + "news**",
             value="Sends the current Battle Royale news",
@@ -814,6 +825,11 @@ async def on_message(message):
           embed.add_field(
             name="**" + prefix + "stats**",
             value="Gets the stats for the given Epic Games username",
+            inline = True
+          )
+          embed.add_field(
+            name="**" + prefix + "shop**",
+            value="Prints the daily item shop",
             inline = True
           )
           embed.add_field(
@@ -829,14 +845,13 @@ async def on_message(message):
           embed.add_field(
             name=f"**Support Server**", 
             value="https://discord.gg/qJqMaTfVK9",
-            inline=False)
+            inline=False
+          )
           embed.add_field(
           name=f"**Website**", 
           value=website,
-          inline=False)
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          
+          inline=False
+          )
           await message.author.send(embed=embed)
           return
         else:
@@ -864,6 +879,11 @@ async def on_message(message):
           embed.add_field(
             name="**" + prefix + "stats**",
             value="Gets the stats for the given Epic Games username",
+            inline = True
+          )
+          embed.add_field(
+            name="**" + prefix + "shop**",
+            value="Prints the daily item shop",
             inline = True
           )
           embed.add_field(
