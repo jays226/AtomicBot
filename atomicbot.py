@@ -10,7 +10,6 @@ import fortnitepy
 import requests
 from discord.ext import commands
 from datetime import datetime, timedelta, date
-from shop import getShop, makeImage
 import time
 
 from requests.api import get
@@ -344,24 +343,20 @@ async def set_and_update_party_prop(self, schema_key: str, new_value: Any) -> No
 
     await self.party.patch(updated=prop)
 
-async def send_shop():
-  with open('./config.json') as f:
-    config = json.load(f)
-    shop = getShop(config['auth'])
-    makeImage(shop, config['ad1'], config['ad2'])
-    print("Printing Item Shop to channel")
+async def send_shop(channel_id):
+  r = requests.get(url="https://fortool.fr/cm/api/v1/shop?lang=en")
+  data = json.loads(r.text)
+  url = data['images']['default']
+  
   today = date.today()
-  day = today.strftime("%b_%d_%Y")
   day2 = today.strftime("%b %d %Y")
   embed = discord.Embed(
     title = "Item Shop for " + day2,
     color=color
   )
-  channel = bot.get_channel(803080074396041218)
+  embed.set_image(url=url)
+  channel = bot.get_channel(channel_id)
   await channel.send(embed=embed)
-  file = discord.File(f"shops/itemshop_{day}.png", filename="itemshop_{day}.png")
-  embed.set_image(url=f"attachment://itemshop_{day}.png")
-  await channel.send(file=file)
 
 botdict = {}
 savedauths = {}
@@ -386,10 +381,8 @@ async def on_ready():
     try:
       today = datetime.utcnow()
       hour = today.strftime("%H %M")
-      print(hour)
-      if(hour == "00 01" or hour == "24 01" or hour == "24 02" or hour == "00 02"):
-        await send_shop()
-        await asyncio.sleep(60)
+      if(hour == "00 01"):
+        await send_shop(803080074396041218)
       await bot.change_presence(activity=discord.Game(name="made by AtomicXYZ"))
       await asyncio.sleep(10)
       await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=str(len(bot.guilds)) + " Servers"))
@@ -703,10 +696,11 @@ async def on_message(message):
           print(i)
       
       if(args[0] == '+send_update'):
-        for i in current_list.keys():
+        print(args[1])
+        for i in botdict.keys():
           print(i)
           try:
-            await i.send("Notice: the bot will have an update soon. Your bot will go offline temporarily")
+            await i.send(args[1])
             print("update notice sent")
           except:
             print("update notice error")
@@ -1173,20 +1167,7 @@ async def on_message(message):
       #     return
 
       if(args[0] == prefix + 'shop'):
-        try:
-          today = date.today()
-          day = today.strftime("%b_%d_%Y")
-          day2 = today.strftime("%b %d %Y")
-          embed = discord.Embed(
-            title = "Item Shop for " + day2,
-            color=color
-          )
-          await message.channel.send(embed=embed)
-          file = discord.File(f"shops/itemshop_{day}.png", filename="itemshop_{day}.png")
-          embed.set_image(url=f"attachment://itemshop_{day}.png")
-          await message.channel.send(file=file)
-        except:
-          message.channel.send('This command requires the `Attach Files` permission')
+        await send_shop(message.channel.id)
 
       if(args[0] == prefix + 'search'):
         try:
