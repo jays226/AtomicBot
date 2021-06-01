@@ -316,6 +316,12 @@ bot = commands.Bot(command_prefix=prefixs, intents=intents)
 
 bot.remove_command('help')
 
+class gummyCosmetic:
+  def __init__(self, name, id):
+    self.id = id
+    self.name = name
+
+
 async def fetch_cosmetic(type_, name) -> None:
     try:
       data = await BenBotAsync.get_cosmetic(
@@ -334,8 +340,12 @@ async def fetch_cosmetic(type_, name) -> None:
                 name=name,
                 backendType=type_
             )
-      except (BenBotAsync.exceptions.NotFound):
-        data = None
+      except:
+        try:  
+          gummyfn = getCosmetic(name)['info']
+          data = gummyCosmetic(gummyfn['name'], gummyfn['id'])
+        except:
+          data = None
     return data
 
 async def set_and_update_party_prop(self, schema_key: str, new_value: Any) -> None:
@@ -963,7 +973,7 @@ async def on_message(message):
           )
           await asyncio.sleep(1)
           try:
-            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
+            embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.outfit}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -995,7 +1005,7 @@ async def on_message(message):
           )
           await asyncio.sleep(1)
           try:
-            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
+            embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.outfit}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -1027,7 +1037,7 @@ async def on_message(message):
           )
           await asyncio.sleep(1)
           try:
-            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.pickaxe}/icon.png")
+            embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.pickaxe}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -1058,7 +1068,7 @@ async def on_message(message):
           )
           await asyncio.sleep(1)
           try:
-            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.pickaxe}/icon.png")
+            embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.pickaxe}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -1159,7 +1169,7 @@ async def on_message(message):
       #       description=member.outfit,
       #       color=color
       #     )
-      #     thumbnailVar = f"https://benbotfn.tk/cdn/images/{member.outfit}/variant/{str(member.outfit_variants[0]['c'])}/{str(variantName)}.png"
+      #     thumbnailVar = f"https://benbot.app/cdn/images/{member.outfit}/variant/{str(member.outfit_variants[0]['c'])}/{str(variantName)}.png"
       #     embed.set_thumbnail(url=thumbnailVar)
       #     embed.set_author(name="AtomicBot",icon_url=profileimg)
       #     embed.set_footer(text=footertext)
@@ -1631,7 +1641,7 @@ async def on_message(message):
           color=color
           )
           try:
-            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.emote}/icon.png")
+            embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.emote}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -1663,7 +1673,7 @@ async def on_message(message):
           color=color
           )
           try:
-            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.emote}/icon.png")
+            embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.emote}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -1696,7 +1706,7 @@ async def on_message(message):
             color=color
           )
           try:
-            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.backpack}/icon.png")
+            embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.backpack}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -1727,7 +1737,7 @@ async def on_message(message):
             color=color
           )
           try:
-            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.backpack}/icon.png")
+            embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.backpack}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
