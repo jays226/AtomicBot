@@ -962,7 +962,10 @@ async def on_message(message):
             color=color
           )
           await asyncio.sleep(1)
-          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
+          try:
+            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
+          except:
+            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -991,7 +994,10 @@ async def on_message(message):
             color=color
           )
           await asyncio.sleep(1)
-          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
+          try:
+            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.outfit}/icon.png")
+          except:
+            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -1020,7 +1026,10 @@ async def on_message(message):
             color=color
           )
           await asyncio.sleep(1)
-          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.pickaxe}/icon.png")
+          try:
+            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.pickaxe}/icon.png")
+          except:
+            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -1048,7 +1057,10 @@ async def on_message(message):
             color=color
           )
           await asyncio.sleep(1)
-          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.pickaxe}/icon.png")
+          try:
+            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.pickaxe}/icon.png")
+          except:
+            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -1184,7 +1196,10 @@ async def on_message(message):
             value=data['description'],
             inline=False
           )
-          embed.set_thumbnail(url=data1['images']['icon'])
+          try:
+            embed.set_thumbnail(url=data1['images']['icon'])
+          except:
+            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.channel.send(embed=embed)
@@ -1295,7 +1310,10 @@ async def on_message(message):
             )
             
             thumbnailVar = style['image']
-            embed.set_thumbnail(url=thumbnailVar)
+            try:
+              embed.set_thumbnail(url=thumbnailVar)
+            except:
+              embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
             embed.set_author(name="AtomicBot",icon_url=profileimg)
             embed.set_footer(text=footertext)
             await message.author.send(embed=embed)
@@ -1612,7 +1630,10 @@ async def on_message(message):
           description=cosmetic.id,
           color=color
           )
-          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.emote}/icon.png")
+          try:
+            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.emote}/icon.png")
+          except:
+            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -1641,7 +1662,10 @@ async def on_message(message):
           description=member.emote,
           color=color
           )
-          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.emote}/icon.png")
+          try:
+            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.emote}/icon.png")
+          except:
+            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -1671,7 +1695,10 @@ async def on_message(message):
             description=cosmetic.id,
             color=color
           )
-          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.backpack}/icon.png")
+          try:
+            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.backpack}/icon.png")
+          except:
+            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
@@ -1699,7 +1726,10 @@ async def on_message(message):
             description=member.backpack,
             color=color
           )
-          embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.backpack}/icon.png")
+          try:
+            embed.set_thumbnail(url=f"https://benbotfn.tk/cdn/images/{member.backpack}/icon.png")
+          except:
+            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
