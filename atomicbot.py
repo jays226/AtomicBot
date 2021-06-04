@@ -713,7 +713,7 @@ async def on_message(message):
         print(args[1])
         for j in botdict.keys():
           print(j)
-          i = bot.fetch_user(j)
+          i = await bot.fetch_user(j)
           try:
             await i.send(args[1])
             print("update notice sent")
