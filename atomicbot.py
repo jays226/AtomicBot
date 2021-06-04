@@ -710,12 +710,12 @@ async def on_message(message):
           print(i)
       
       if(args[0] == '+send_update'):
-        print(args[1])
+        print(command)
         for j in botdict.keys():
           print(j)
           i = await bot.fetch_user(j)
           try:
-            await i.send(args[1])
+            await i.send(command)
             print("update notice sent")
           except Exception as e:
             print(f"update notice error: {e}")
