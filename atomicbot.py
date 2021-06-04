@@ -9,10 +9,8 @@ import discord
 import fortnitepy
 import requests
 from discord.ext import commands
-from datetime import datetime, timedelta, date
-import time
-
-from requests.api import get
+from datetime import datetime, date
+from EpicEndpoints import EpicEndpoints
 
 website = "https://atomicxyz.tk/atomicbot/"
 
@@ -246,7 +244,7 @@ def getClient(device_id:str,account_id:str,secret:str,message):
     async def event_party_invite(invitation):
       embed = discord.Embed(
           title=f"Party Invite From {invitation.sender.display_name}",
-          description="Accept or Decline Invite?",
+          description="Should I Accept the Invite?",
           color=color)
       await asyncio.sleep(1)
       msgEmbed = await message.author.send(embed=embed)
@@ -386,13 +384,18 @@ profileimg = "https://cdn.discordapp.com/avatars/829050201648922645/d8d62960d600
 
 @bot.event
 async def on_ready():
+  shop = True
   print('Logged in')
   while True:
     try:
+      shop == True
       today = datetime.utcnow()
       hour = today.strftime("%H %M")
-      if(hour == "00 01"):
+      if(hour == "00 01" and shop == True):
         await send_shop(803080074396041218)
+        shop == False
+        await asyncio.sleep(60)
+        shop == True
       await bot.change_presence(activity=discord.Game(name="made by AtomicXYZ"))
       await asyncio.sleep(10)
       await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=str(len(bot.guilds)) + " Servers"))
@@ -402,6 +405,7 @@ async def on_ready():
       await bot.change_presence(activity=discord.Game(name=f"{len(botdict)} bots online"))
       await asyncio.sleep(10)
     except Exception as e:
+      shop == True
       print(e)
       continue
 
@@ -707,14 +711,16 @@ async def on_message(message):
       
       if(args[0] == '+send_update'):
         print(args[1])
-        for i in botdict.keys():
-          print(i)
+        for j in botdict.keys():
+          print(j)
+          i = bot.fetch_user(j)
           try:
             await i.send(args[1])
             print("update notice sent")
-          except:
-            print("update notice error")
+          except Exception as e:
+            print(f"update notice error: {e}")
             continue
+          await asyncio.sleep(1)
 
       if(args[0] == prefix + 'help'):
         if(client):
