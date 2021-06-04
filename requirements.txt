@@ -7,3 +7,4 @@ fortnitepy
 pillow
 requests
 datetime
+EpicEndpoints
