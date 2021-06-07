@@ -411,9 +411,9 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
-    await asyncio.sleep(1)
     try:
       if message.channel.id == (831968067684007987):
+          await asyncio.sleep(1)
           await message.delete()
     except:
       print('Error Deleting Message')
@@ -426,6 +426,7 @@ async def on_message(message):
     command = " ".join(end)
     skinurl = "-".join(end)
     if(args[0] == prefix + 'start' or args[0] == prefix + 'startbot'):
+        await asyncio.sleep(1)
         try:
           await message.delete()
         except:
@@ -708,9 +709,11 @@ async def on_message(message):
         current_list = botdict.items()
         for i in current_list:
           print(i)
+        return
       
       if(args[0] == '+send_update'):
         print(command)
+        await message.author.send("sending " + command)
         for j in botdict.keys():
           print(j)
           i = await bot.fetch_user(j)
@@ -963,6 +966,7 @@ async def on_message(message):
             color=color
           )
           await message.channel.send(embed=embed)
+        return
 
       if(args[0] == prefix + 'skin'):
         cosmetic = await fetch_cosmetic('AthenaCharacter', command)
