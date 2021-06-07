@@ -411,6 +411,7 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
+    await asyncio.sleep(1)
     try:
       if message.channel.id == (831968067684007987):
           await asyncio.sleep(1)
