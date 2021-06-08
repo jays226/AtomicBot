@@ -243,10 +243,10 @@ try:
 
       @client.event
       async def event_party_invite(invitation):
-        print(f"Invite from {invitation.sender.display_name}")
+        print(f"Invite from {invitation.sender.display_name}\nMessage Author: {message.author.name}")
+        print("")
         try:
           if(invitation.sender):
-            print(invitation.sender)
             embed = discord.Embed(
                 title=f"Party Invite From {invitation.sender.display_name}",
                 description="Should I Accept the Invite?",
@@ -267,7 +267,8 @@ try:
                 if(invitation and invitation.sender):
                   try:
                     await invitation.accept()
-                  except(fortnitepy.errors.HTTPException, fortnitepy.errors.Forbidden):
+                  except(fortnitepy.errors.HTTPException, fortnitepy.errors.Forbidden) as e:
+                    print("Error on Accept")
                     pass
                   embed = discord.Embed(
                       title=f"Accepted Invite From {invitation.sender.display_name}",
@@ -419,6 +420,7 @@ try:
 
   @bot.event
   async def on_message(message):
+      print(f"Message Author: {message.author.name}")
       await asyncio.sleep(1)
       try:
         if message.channel.id == (831968067684007987):
