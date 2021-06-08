@@ -265,7 +265,10 @@ try:
             if reaction.emoji.name == '✅':
               try:
                 if(invitation and invitation.sender):
-                  await invitation.accept()
+                  try:
+                    await invitation.accept()
+                  except(fortnitepy.errors.HTTPException, fortnitepy.errors.Forbidden):
+                    pass
                   embed = discord.Embed(
                       title=f"Accepted Invite From {invitation.sender.display_name}",
                       color=color)
@@ -281,6 +284,7 @@ try:
                 await message.author.send(embed=embed)
                 print(crayons.red("Error Joining Party"))
             elif reaction.emoji.name == '❌':
+              await invitation.decline()
               embed = discord.Embed(
                     title=f"Declined Invite From {invitation.sender.display_name}",
                     color=color)
