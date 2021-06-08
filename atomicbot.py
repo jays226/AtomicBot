@@ -98,7 +98,7 @@ footertext = "AtomicBot v1.0 by AtomicXYZ"
 
 intents = discord.Intents.default()
 
-bot = commands.Bot(command_prefix=prefixs, intents=intents)
+bot = commands.Bot(command_prefix=prefix, intents=intents)
 
 bot.remove_command('help')
 
