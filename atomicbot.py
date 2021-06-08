@@ -1850,6 +1850,6 @@ async def extract(ctx, path = None):
       
 # bot.run('ODMyMjYzNjcyODQzMDc1NjE0.YHhP8g.-XaEozpPh2QwZVQJSUkL0fsfS3I') # TEST TOKEN
 
-# bot.run(os.environ['DISCORD_TOKEN'])
+bot.run(os.environ['DISCORD_TOKEN'])
 
-bot.run("ODI5MDUwMjAxNjQ4OTIyNjQ1.YGyfKw.Ll3lzer7STRx62O8bz1Dehvvxcw") # MAIN TOKEN
+# bot.run("ODI5MDUwMjAxNjQ4OTIyNjQ1.YGyfKw.Ll3lzer7STRx62O8bz1Dehvvxcw") # MAIN TOKEN
