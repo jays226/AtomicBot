@@ -96,9 +96,9 @@ prefix = 'a!'
 color = 0xff0000
 footertext = "AtomicBot v1.0 by AtomicXYZ"
 
-intents = discord.Intents(messages=True, members=True)
+intents = discord.Intents.default()
 
-bot = commands.Bot(command_prefix=prefix, intents=intents)
+bot = commands.Bot(command_prefix=prefixs, intents=intents)
 
 bot.remove_command('help')
 
