@@ -241,8 +241,9 @@ try:
         except:
           print(crayons.red("Friend Request Error"))
 
-      @bot.event
-      async def event_party_invite(invitation) -> None:
+      @client.event
+      async def event_party_invite(invitation):
+        print(f"Invite from {invitation.sender.display_name}")
         try:
           if(invitation.sender):
             print(invitation.sender)
