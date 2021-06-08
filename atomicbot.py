@@ -394,7 +394,7 @@ def getBots():
   return data
 
 emoteseconds = 60
-expiretime = 60
+expiretime = 120
 profileimg = "https://cdn.discordapp.com/avatars/829050201648922645/d8d62960d600af3975b61735ccc5e90c.png?size=128"
 
 @bot.event
@@ -406,6 +406,7 @@ async def on_ready():
       hour = today.strftime("%H %M")
       if(hour == "00 01"):
         await send_shop(803080074396041218)
+        hour = "00 02"
         await asyncio.sleep(60)
       await bot.change_presence(activity=discord.Game(name="made by AtomicXYZ"))
       await asyncio.sleep(10)
@@ -511,14 +512,8 @@ async def on_message(message):
 
         tasks = []
 
-        async def starter():
-          try:
-              await client.start()
-          except Exception as e:
-              return e
-
         try:
-          tasks.append(starter())
+          tasks.append(client.start())
           tasks.append(bot.loop.create_task(client.wait_until_ready()))
           done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
         except: 
@@ -1804,8 +1799,8 @@ async def on_message(message):
     
     except Exception as e: 
       embed = discord.Embed(
-          title = "Error: Incorrect Command",
-          description = f"Please check for typos or report this bug to AtomicXYZ\nError: {e}",
+          title = "Error",
+          description = f"Please check for typos or report this bug to AtomicXYZ\n\nError: {e}",
           color=color
         )
       await message.channel.send(embed=embed)
