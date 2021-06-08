@@ -242,58 +242,55 @@ try:
           print(crayons.red("Friend Request Error"))
 
       @bot.event
-      async def event_party_invite(invite: fortnitepy.ReceivedPartyInvitation) -> None:
-        await invite.accept()
-        print(f'Accepted party invite from {invite.sender.display_name}.')
-
-        # try:
-        #   if(invitation.sender):
-        #     print(invitation.sender)
-        #     embed = discord.Embed(
-        #         title=f"Party Invite From {invitation.sender.display_name}",
-        #         description="Should I Accept the Invite?",
-        #         color=color)
-        #     await asyncio.sleep(1)
-        #     msgEmbed = await message.author.send(embed=embed)
-        #     reactions = ['✅','❌']
-        #     for emoji in reactions: 
-        #       await msgEmbed.add_reaction(emoji)
+      async def event_party_invite(invitation) -> None:
+        try:
+          if(invitation.sender):
+            print(invitation.sender)
+            embed = discord.Embed(
+                title=f"Party Invite From {invitation.sender.display_name}",
+                description="Should I Accept the Invite?",
+                color=color)
+            await asyncio.sleep(1)
+            msgEmbed = await message.author.send(embed=embed)
+            reactions = ['✅','❌']
+            for emoji in reactions: 
+              await msgEmbed.add_reaction(emoji)
             
-        #     def check(reaction, user):
-        #       return reaction.message == msgEmbed and user == message.author
+            def check(reaction, user):
+              return reaction.message == msgEmbed and user == message.author
 
-        #     reaction = await bot.wait_for('raw_reaction_add', check=lambda reaction: reaction.message_id == msgEmbed.id and reaction.user_id == message.author.id)
+            reaction = await bot.wait_for('raw_reaction_add', check=lambda reaction: reaction.message_id == msgEmbed.id and reaction.user_id == message.author.id)
 
-        #     if reaction.emoji.name == '✅':
-        #       try:
-        #         if(invitation and invitation.sender):
-        #           await invitation.accept()
-        #           embed = discord.Embed(
-        #               title=f"Accepted Invite From {invitation.sender.display_name}",
-        #               color=color)
-        #           msgAccept = await message.author.send(embed=embed)
-        #           await asyncio.sleep(5)
-        #           await msgAccept.delete()
-        #           await asyncio.sleep(1)
-        #           await msgEmbed.delete()
-        #       except:
-        #         embed = discord.Embed(
-        #             title=f"Error Joining Party",
-        #             color=color)
-        #         await message.author.send(embed=embed)
-        #         print(crayons.red("Error Joining Party"))
-        #     elif reaction.emoji.name == '❌':
-        #       embed = discord.Embed(
-        #             title=f"Declined Invite From {invitation.sender.display_name}",
-        #             color=color)
-        #       msgDecline = await message.author.send(embed=embed)
-        #       await asyncio.sleep(5)
-        #       await msgDecline.delete()
-        #       await asyncio.sleep(1)
-        #       await msgEmbed.delete()
-        # except Exception as e:
-        #   print(crayons.red(f"Party Invite Error: {e}"))
-        #   pass
+            if reaction.emoji.name == '✅':
+              try:
+                if(invitation and invitation.sender):
+                  await invitation.accept()
+                  embed = discord.Embed(
+                      title=f"Accepted Invite From {invitation.sender.display_name}",
+                      color=color)
+                  msgAccept = await message.author.send(embed=embed)
+                  await asyncio.sleep(5)
+                  await msgAccept.delete()
+                  await asyncio.sleep(1)
+                  await msgEmbed.delete()
+              except:
+                embed = discord.Embed(
+                    title=f"Error Joining Party",
+                    color=color)
+                await message.author.send(embed=embed)
+                print(crayons.red("Error Joining Party"))
+            elif reaction.emoji.name == '❌':
+              embed = discord.Embed(
+                    title=f"Declined Invite From {invitation.sender.display_name}",
+                    color=color)
+              msgDecline = await message.author.send(embed=embed)
+              await asyncio.sleep(5)
+              await msgDecline.delete()
+              await asyncio.sleep(1)
+              await msgEmbed.delete()
+        except Exception as e:
+          print(crayons.red(f"Party Invite Error: {e}"))
+          pass
       return client
 
       
@@ -1127,6 +1124,7 @@ try:
 
         if(args[0] == prefix + 'shop'):
           await send_shop(message.channel.id)
+          return
 
         if(args[0] == prefix + 'search'):
           try:
@@ -1150,6 +1148,7 @@ try:
             embed.set_author(name="AtomicBot",icon_url=profileimg)
             embed.set_footer(text=footertext)
             await message.channel.send(embed=embed)
+            return
           except Exception as e:
             embed = discord.Embed(
             title="Error: Search Failed",
@@ -1159,6 +1158,7 @@ try:
             embed.set_author(name="AtomicBot",icon_url=profileimg)
             embed.set_footer(text=footertext)
             await message.channel.send(embed=embed)
+            return
         
         if(args[0] == prefix + 'style'):
           cosmetic = await fetch_cosmetic('AthenaCharacter', command)
