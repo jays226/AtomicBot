@@ -335,11 +335,28 @@ bot = commands.Bot(command_prefix=prefixs, intents=intents)
 
 bot.remove_command('help')
 
-class gummyCosmetic:
+class fnAPICosmetic:
   def __init__(self, name, id):
     self.id = id
     self.name = name
 
+def getFortniteAPI(name):
+  try:
+    url = "https://fortnite-api.com/v2/cosmetics/br/search"
+
+    querystring = {"name":name}
+
+    headers = {
+        'content-type': "application/ json",
+        'cache-control': "no-cache",
+        }
+
+    response = requests.request("GET", url, headers=headers,params=querystring)
+
+    data = json.loads(response.text)
+    return data
+  except:
+    return None
 
 async def fetch_cosmetic(type_, name) -> None:
     data = None
@@ -352,13 +369,17 @@ async def fetch_cosmetic(type_, name) -> None:
               backendType=type_
           )
     except:
-        data = await BenBotAsync.get_cosmetic(
-                lang="en",
-                searchLang="en",
-                matchMethod="contains",
-                name=name,
-                backendType=type_
-            )
+        try:
+          data = await BenBotAsync.get_cosmetic(
+                  lang="en",
+                  searchLang="en",
+                  matchMethod="contains",
+                  name=name,
+                  backendType=type_
+              )
+        except:
+          APIdata = getFortniteAPI(name)['data']
+          data = fnAPICosmetic(name=APIdata['name'],id=APIdata['id'])
     return data
 
 async def set_and_update_party_prop(self, schema_key: str, new_value: Any) -> None:
