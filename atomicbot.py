@@ -446,7 +446,7 @@ async def on_message(message):
         if(client):
           embed=discord.Embed(
           title="Error: Bot Currently Running",
-          description="Stop the bot with " + prefix + "stop", 
+          description="Stop the bot with " + prefix + "stop, then type " + prefix + "start", 
           color=color)
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
@@ -584,8 +584,10 @@ async def on_message(message):
           # deleteCurrentBot(message.author.id, client_info)
           del savedauths[message.author.id]
           await client.close(close_http=True,dispatch_close=True)
-          if(client.is_closed):
-            print(crayons.red(f"Bot cancelled {client.user.display_name}"))
+          print(crayons.red(f"Bot cancelled {client_info['name']}"))
+          embed_expire = discord.Embed(
+            title=f"Bot Cancelled: {client_info['name']}")
+          await message.author.send(embed=embed_expire)
           return
 
         else:
@@ -723,7 +725,8 @@ async def on_message(message):
       
       if(args[0] == '+send_update'):
         print(command)
-        for j in botdict.keys():
+        botdict1 = botdict
+        for j in botdict1.keys():
           print(j)
           i = await bot.fetch_user(j)
           try:
@@ -950,15 +953,15 @@ async def on_message(message):
           return
     
       if(args[0] == prefix + 'stop' or args[0] == prefix + 'stopbot'):
+        try:          
+          for task in tasks:
+            task.cancel
+        except:
+            pass
         if(client):
           del botdict[message.author.id]
           client_info = {'name' : client.user.display_name, 'id' : client.user.id}
           # deleteCurrentBot(message.author.id, client_info)
-          try:          
-            for task in tasks:
-              task.cancel
-          except:
-            pass
           await client.close(close_http=True,dispatch_close=True)
           if(client.is_closed):
             print(crayons.red(f"Bot cancelled {client.user.display_name}"))
