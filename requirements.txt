@@ -1,7 +1,7 @@
 discord
 crayons
 aiohttp
-BenBotAsync
+BenBotAsync==3.0.1
 asyncio
 fortnitepy
 pillow
