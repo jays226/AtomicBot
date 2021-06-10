@@ -592,23 +592,25 @@ async def on_message(message):
             title="Type " + prefix + "help for the list of commands",
             description="**Watch this video if you need help: https://youtu.be/YPZMTIET3S8**",
             color=color)
-          embed2.set_author(name="Help",icon_url="https://hotemoji.com/images/dl/1/question-mark-emoji-by-twitter.png")
+          embed2.set_author(name="Important",icon_url="https://hotemoji.com/images/dl/1/question-mark-emoji-by-twitter.png")
 
           await message.author.send(embed=embed)
           await message.author.send(embed=embed2)
 
           await asyncio.sleep(expiretime*60)
-          for task in tasks:
-            task.cancel
+
           del botdict[message.author.id]
-          client_info = {'name' : client.user.display_name, 'id' : client.user.id}
-          # deleteCurrentBot(message.author.id, client_info)
-          del savedauths[message.author.id]
           await client.close(close_http=True,dispatch_close=True)
-          print(crayons.red(f"Bot cancelled {client_info['name']}"))
-          embed_expire = discord.Embed(
-            title=f"Bot Cancelled: {client_info['name']}")
-          await message.author.send(embed=embed_expire)
+          if(client.is_closed):
+            print(crayons.red(f"Bot cancelled {client.user.display_name}"))
+          
+          embeddone = discord.Embed(
+            title=
+            "Bot Expired!",
+            description=
+            "Restart Bot by typing " + prefix + "start",
+            color=color)
+          await message.author.send(embed=embeddone)
           return
 
         else:
@@ -974,15 +976,8 @@ async def on_message(message):
           return
     
       if(args[0] == prefix + 'stop' or args[0] == prefix + 'stopbot'):
-        try:          
-          for task in tasks:
-            task.cancel
-        except:
-            pass
         if(client):
           del botdict[message.author.id]
-          client_info = {'name' : client.user.display_name, 'id' : client.user.id}
-          # deleteCurrentBot(message.author.id, client_info)
           await client.close(close_http=True,dispatch_close=True)
           if(client.is_closed):
             print(crayons.red(f"Bot cancelled {client.user.display_name}"))
@@ -994,14 +989,14 @@ async def on_message(message):
             "Restart Bot by typing " + prefix + "start",
             color=color)
           await message.author.send(embed=embeddone)
-          return
         else:
-          embed = discord.Embed(
-            title = "Error: you don't have a bot running",
-            description = "Create a bot with " + prefix + "start",
-            color=color
-          )
-          await message.channel.send(embed=embed)
+          embeddone = discord.Embed(
+            title=
+            "You dont have a bot running!",
+            description=
+            "Start a Bot by typing " + prefix + "start",
+            color=color)
+          await message.author.send(embed=embeddone)
         return
 
       if(args[0] == prefix + 'skin'):
