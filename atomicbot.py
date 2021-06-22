@@ -6,11 +6,13 @@ from typing import Any
 import BenBotAsync
 import crayons
 import discord
+from discord.errors import PrivilegedIntentsRequired
 import fortnitepy
 import requests
 from discord.ext import commands
 from datetime import datetime, date
 from EpicEndpoints import EpicEndpoints
+from requests.models import stream_decode_response_unicode
 
 website = "https://atomicxyz.tk/atomicbot/"
 
@@ -145,7 +147,7 @@ def getVariants(id):
 
     data = json.loads(response.text)
 
-    return data["data"]["variants"][0]
+    return data["data"]["variants"]
 
 clientToken = "NTIyOWRjZDNhYzM4NDUyMDhiNDk2NjQ5MDkyZjI1MWI6ZTNiZDJkM2UtYmY4Yy00ODU3LTllN2QtZjNkOTQ3ZDIyMGM3"
 
@@ -242,14 +244,6 @@ def getClient(device_id:str,account_id:str,secret:str,message):
 
     @client.event
     async def event_party_invite(invitation):
-      # embed = discord.Embed(
-      #   title=f"This Feature is Currently Down: Party Invites",
-      #   color=color)
-      # await message.author.send(embed=embed)
-      # embed2 = discord.Embed(
-      #   title=f"Please Instead Join the Bot's Party and type: \"a!privacy private\"",
-      #   color=color)
-      # await message.author.send(embed=embed2)
       
       print(f"Invite from {invitation.sender.display_name}\nBot Owner: {message.author.name}")
       try:
@@ -327,7 +321,7 @@ prefix = 'a!'
 prefixs = "a!","A!"
 
 color = 0xff0000
-footertext = "AtomicBot v2.3 by AtomicXYZ"
+footertext = "AtomicBot v2.4 | By AtomicXYZ"
 
 intents = discord.Intents.default()
 
@@ -430,13 +424,13 @@ async def on_ready():
         hour = "00 02"
         await asyncio.sleep(60)
       await bot.change_presence(activity=discord.Game(name="made by AtomicXYZ"))
-      await asyncio.sleep(10)
+      await asyncio.sleep(5)
       await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=str(len(bot.guilds)) + " Servers"))
-      await asyncio.sleep(10)
-      await bot.change_presence(activity=discord.Game(name="a!help"))
-      await asyncio.sleep(10)
-      await bot.change_presence(activity=discord.Game(name=f"{len(botdict)} bots online"))
-      await asyncio.sleep(10)
+      await asyncio.sleep(5)
+      await bot.change_presence(activity=discord.Game(name="a!start for a bot"))
+      await asyncio.sleep(5)
+      await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(botdict)} bots online"))
+      await asyncio.sleep(5)
     except Exception as e:
       print(e)
       continue
@@ -479,13 +473,14 @@ async def on_message(message):
 
         embed=discord.Embed(
         title="AtomicBot Control Panel",
-        description=f"**1.** [**Click Here**](https://epicgames.com/) **and Log in with an ALT Account**\n\n**2.** [**Click Here**]({data['verification_uri_complete']}) **and click \"confirm\"**\n\n**3. React with ✅**\n\n**React with ❌ cancel**",
+        description=f"**1.** [**Click Here**](https://epicgames.com/) **and Log in with an ALT Account**\n\n**2.** [**Click Here**]({data['verification_uri_complete']}) **and click \"confirm\"**\n\n**3. React with ✅ within 10 min**\n\n**React with ❌ cancel**",
         color=color)
         embed.set_author(name="AtomicBot",icon_url=profileimg)
 
         embed.set_footer(text=footertext)
 
         msgEmbed = await message.author.send(embed=embed)
+
         reactions = ['✅','❌']
         
         for emoji in reactions: 
@@ -518,14 +513,15 @@ async def on_message(message):
 
         else:
           print("Bot creation cancelled")
-          embed=discord.Embed(
+          
+          embedcancel=discord.Embed(
             title="Bot Creation Cancelled",
             color=color)
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          embedcancel.set_author(name="AtomicBot",icon_url=profileimg)
 
-          embed.set_footer(text=footertext)
+          embedcancel.set_footer(text=footertext)
 
-          msgEmbed = await message.author.send(embed=embed)
+          await msgEmbed.edit(embed=embedcancel)
           return
         
         print("Bot Creation Started")
@@ -556,44 +552,18 @@ async def on_message(message):
           await edit_and_keep_client_member(client)
           embed = discord.Embed(
             title=f"Bot Control Panel for {client.user.display_name}",
+            description=f"**Bot Info**\nYour Bot will expire in **{expiretime} min**\nType **" + prefix + "stop** to stop your bot\n\n**Cosmetic Commands**\na!skin `name` - Changes the bot's skin\na!emote `name` - Changes the bot's emote\na!backpack `name` - Changes the bot's backbling\na!pickaxe `name` - Changes the bot's pickaxe\na!level `number` - Changes the bot's level\na!style `cosmetic name` - Changes the style/variant of a cosmetic\na!hide/a!unhide - Hides and unhides the bot's party members\na!pinkghoul - Changes to the pink ghoul trooper skin\na!purpleskull - Changes to the purple skull trooper skin\na!cid/eid/pid/bid `id` - Changes the bot's cosmetic by cosmetic ID\n\n**Utility Commands**\na!ready/a!unready - Changes the bot to the ready/unready state\na!say `message` - Makes the bot send a message to party\na!privacy `public/private` - Changes the bot's party privacy\na!sitin/a!sitout - Makes the bot sit in or sit out\na!match/a!unmatch - Changes the bot's status to in-match\na!help - Sends the help message",
             color=color)
-          embed.set_thumbnail(url=f"https://cdn-0.skin-tracker.com/images/fnskins/icon/fortnite-summit-striker-outfit.png?ezimgfmt=rs:180x180/rscb10/ng:webp/ngcb10")
-          embed.add_field(
-            name="Friends", 
-            value=f"{len(client.friends)}",
-            inline=True)
-          onlineFriends = []
-          offlineFriends = []
-          for i in client.friends:
-            if(i.is_online()):
-              onlineFriends.append(i)
-            else:
-              offlineFriends.append(i)
-          embed.add_field(
-            name="Online", 
-            value=f"{len(onlineFriends)}",
-            inline=True)
-          embed.add_field(
-            name="Offline", 
-            value=f"{len(offlineFriends)}",
-            inline=True)
-          embed.add_field(
-            name=f"Your Bot will expire in {expiretime} min", 
-            value="\nType " + prefix + "stop to stop your bot",
-            inline=False)
-          embed.add_field(
-            name=f"Join the support server", 
-            value="https://discord.gg/qJqMaTfVK9",
-            inline=False)
+          embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{client.party.me.outfit}/icon.png")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
-          
           embed2 = discord.Embed(
-            title="Type " + prefix + "help for the list of commands",
-            description="**Watch this video if you need help: https://youtu.be/YPZMTIET3S8**",
-            color=color)
-          embed2.set_author(name="Important",icon_url="https://hotemoji.com/images/dl/1/question-mark-emoji-by-twitter.png")
+            title="❗Important",
+            description="**Watch this video if you need help:** https://youtu.be/YPZMTIET3S8\n**Join the support server:** https://discord.gg/qJqMaTfVK9",
+            color=color
+          )
 
+          await msgEmbed.delete()
           await message.author.send(embed=embed)
           await message.author.send(embed=embed2)
 
@@ -763,212 +733,24 @@ async def on_message(message):
       if(args[0] == prefix + 'help'):
         if(client):
           embed = discord.Embed(
-            title=f"Help Page for {client.user.display_name}",
-            description="Commands must be sent in DMs\n**Watch this video if you need help: https://youtu.be/YPZMTIET3S8**",
+            title=f"Help Page",
+            description=f"**Cosmetic Commands**\na!skin `name` - Changes the bot's skin\na!emote `name` - Changes the bot's emote\na!backpack `name` - Changes the bot's backbling\na!pickaxe `name` - Changes the bot's pickaxe\na!level `number` - Changes the bot's level\na!style `cosmetic name` - Changes the style/variant of a cosmetic\na!hide/a!unhide - Hides and unhides the bot's party members\na!pinkghoul - Changes to the pink ghoul trooper skin\na!purpleskull - Changes to the purple skull trooper skin\na!cid/eid/pid/bid `id` - Changes the bot's cosmetic by cosmetic ID\n\n**Utility Commands**\na!ready/a!unready - Changes the bot to the ready/unready state\na!say `message` - Makes the bot send a message to party\na!privacy `public/private` - Changes the bot's party privacy\na!sitin/a!sitout - Makes the bot sit in or sit out\na!match/a!unmatch - Changes the bot's status to in-match\n\n**General Commands**\na!news - Shows the current battle royale news\na!stats `epic games username` - Shows the stats of a player\na!shop - Shows the daily item shop\na!invite - Sends the invite link of the bot\na!help - Sends this message\n\n**Support Server:** https://discord.gg/qJqMaTfVK9\n**Website:** {website}",
             color=color
-          )
-          embed.add_field(
-            name="**" + prefix + "stop**",
-            value="Cancels your bot",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "skin**",
-            value="Changes the bot's skin",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "emote**",
-            value=f"Changes the bot's emote",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "backpack**",
-            value="Changes the bot's backpack/backling",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "pickaxe**",
-            value=f"Changes the bot's pickaxe",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "level**",
-            value="Changes the bot's level",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "hide**",
-            value="Hides all of the players in the party",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "unhide**",
-            value="Unhides all of the players in the party",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "pinkghoul**",
-            value="Equips the OG Pink Ghoul Trooper Skin",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "purpleskull**",
-            value="Equips the OG Purple Skull Trooper Skin",
-            inline = True
-          )
-          embed.add_field(
-          name="**" + prefix + "style**",
-          value="Sets a skin's style. Usage: " + prefix + "style ghoul trooper",
-          inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "ready**",
-            value="Changes the bot's ready state to ready",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "unready**",
-            value="Changes the bot's ready state to unready",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "say**",
-            value="Sends a message from the bot in party chat",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "privacy**",
-            value="Changes the bot's party privacy",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "sitout**",
-            value="Makes the bot sit out",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "sitin**",
-            value="Makes the bot sit in",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "cid/eid/pid/bid**",
-            value="Sets the bot's cosmetic via ID",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "match**",
-            value="Sets the bot to in-match status",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "unmatch**",
-            value="Cancels the bot's in-match status",
-            inline = True
           )
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           
           await message.author.send(embed=embed)
 
-          embed = discord.Embed(
-            title=f"Help Page 2",
-            description="Utility Commands",
-            color=color
-          )
-          embed.add_field(
-            name="**" + prefix + "news**",
-            value="Sends the current Battle Royale news",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "stats**",
-            value="Gets the stats for the given Epic Games username",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "shop**",
-            value="Prints the daily item shop",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "invite**",
-            value="Sends the bot's Discord Invite link",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "help**",
-            value="Sends this message",
-            inline = True
-          )
-          embed.add_field(
-            name=f"**Support Server**", 
-            value="https://discord.gg/qJqMaTfVK9",
-            inline=False
-          )
-          embed.add_field(
-          name=f"**Website**", 
-          value=website,
-          inline=False
-          )
-          await message.author.send(embed=embed)
           return
         else:
           embed = discord.Embed(
             title=f"AtomicBot Help",
-            description="Create a bot to see the full commands!\n**Watch this video if you need help: https://youtu.be/YPZMTIET3S8**",
+            description=f"**Create a bot to see the full commands!**\na!news - Shows the current battle royale news\na!stats `epic games username` - Shows the stats of a player\na!shop - Shows the daily item shop\na!invite - Sends the invite link of the bot\na!help - Sends this message\n\n**Support Server:** https://discord.gg/qJqMaTfVK9\n**Website:** {website}",
             color=color
           )
           embed.set_thumbnail(url="https://media.discordapp.net/attachments/836446331992145950/836719691459461180/AtomicLogo.png")
-          embed.add_field(
-            name="**" + prefix + "start**",
-            value="Creates a bot",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "stop**",
-            value="Cancels your bot",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "news**",
-            value="Sends the current Battle Royale news",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "stats**",
-            value="Gets the stats for the given Epic Games username",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "shop**",
-            value="Prints the daily item shop",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "invite**",
-            value="Sends the bot's Discord Invite link",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "info**",
-            value="shows the info of the bot",
-            inline = True
-          )
-          embed.add_field(
-            name="**" + prefix + "help**",
-            value="sends this message",
-            inline = True
-          )
-          embed.add_field(
-            name=f"Join the support server", 
-            value="https://discord.gg/qJqMaTfVK9",
-            inline=False)
-          embed.add_field(
-          name=f"**Website**", 
-          value=website,
-          inline=False)
+        
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           
@@ -1041,7 +823,7 @@ async def on_message(message):
           )
           embed = discord.Embed(
             title="Skin Successfully Changed",
-            description=member.emote,
+            description=member.skin,
             color=color
           )
           await asyncio.sleep(1)
@@ -1190,103 +972,116 @@ async def on_message(message):
           await message.channel.send(embed=embed)
           return
       
-      if(args[0] == prefix + 'style'):
-        cosmetic = await fetch_cosmetic('AthenaCharacter', command)
-        varaints = getVariants(cosmetic.id)
-        options = varaints["options"]
-        try:
-          if(options == None):
-            embed = discord.Embed(
-            title="There are no styles for that skin",
-            color=color
-            )
-            await message.author.send(embed=embed)
-            return
-          else:
-            embed = discord.Embed(
-              title="Styles for " + cosmetic.name,
-              color=color
-            )
-            await message.author.send(embed=embed)
-            count = 1
-            
-            for style in options:
-              name = style['name']
-              img = style['image']
-              embed2 = discord.Embed(
-                title=name,
-                description=f"Type {count} to equip",
+
+      def channelData(data, channel2) -> None:
+        for d in data:
+          channel = d['channel']
+          if(channel == channel2):
+            if(channel2 ==  "clothing_color" or channel2 == "parts"):
+              return d['number']-1
+            elif(channel2 == "jerseycolor"):
+              return d['tag']
+            else:
+              return d['number']
+        return None
+          
+
+      if(args[0] == prefix + 'style' or args[0] == prefix + 'styles' or args[0] == prefix + 'variant' or args[0] == prefix + 'variants'):
+        if(client):
+          cosmetic = await fetch_cosmetic('AthenaCharacter', command)
+          variants_full = getVariants(cosmetic.id)
+          count_one = 1
+          chosen_variants = []
+          for variants in variants_full:
+            options = variants["options"]
+            try:
+              if(options == None):
+                embed = discord.Embed(
+                title="There are no styles for that skin",
+                color=color
+                )
+                await message.author.send(embed=embed)
+                return
+              else:
+                embed = discord.Embed(
+                  title=f"Styles for " + cosmetic.name + f" (Page {count_one})",
+                  color=color
+                )
+                await message.author.send(embed=embed)
+                count = 1
+                
+                for style in options:
+                  name = style['name']
+                  img = style['image']
+                  embed2 = discord.Embed(
+                    title=name,
+                    description=f"Type {count} to equip",
+                    color=color
+                  )
+                  embed2.set_thumbnail(url=img)
+                  await message.author.send(embed=embed2)
+                  count += 1
+                
+                def check(msg):
+                  return msg.content and msg.author.id == message.author.id
+
+                msg = await bot.wait_for('message', check=check)
+                member = client.party.me
+                channel = variants['channel'].lower()
+                num2 = int(msg.content)
+                style = options[num2-1]
+                variantName = style['name']
+                thumbnailVar = style['image']
+                tag = ""
+                try:
+                  tag = style['tag']
+                except:
+                  pass
+
+                variant_obj = {}
+                variant_obj['name'] = variantName
+                variant_obj['channel'] = channel
+                variant_obj['number'] = num2
+                variant_obj['image'] = thumbnailVar
+                variant_obj['tag'] = tag
+
+                chosen_variants.append(variant_obj)
+            except Exception as e:
+              embed = discord.Embed(
+                title="There are no styles for that skin",
+                description=e,
                 color=color
               )
-              embed2.set_thumbnail(url=img)
-              await message.author.send(embed=embed2)
-              count += 1
+              await message.author.send(embed=embed)
+            count_one+=1
             
-            def check(msg):
-              return msg.content and msg.author.id == message.author.id
+          combined_variants = member.create_variant(
+            material=channelData(chosen_variants, "material"),
+            clothing_color=channelData(chosen_variants, "clothingcolor"),
+            parts=channelData(chosen_variants, "parts"),
+            progressive=channelData(chosen_variants, "progressive"),
+            particle=channelData(chosen_variants, "particle"),
+            emissive=channelData(chosen_variants, "emissive"),
+            numeric=channelData(chosen_variants, "numeric"),
+            pattern=channelData(chosen_variants, "pattern"),
+            jersey_color=channelData(chosen_variants, "jerseycolor")
+          )
 
-            msg = await bot.wait_for('message', check=check)
-            member = client.party.me
-            channel = varaints['channel'].lower()
-            num2 = int(msg.content)
-            if(channel == "material"):
-              await member.set_outfit(
-                asset=cosmetic.id,
-                variants = member.create_variant(
-                  material=num2
-                )
-              ) 
-            elif(channel == "clothingcolor"):
-              await member.set_outfit(
-                asset=cosmetic.id,
-                variants = member.create_variant(
-                  clothing_color = num2-1
-                ) 
-              )
-            elif(channel == "parts"):
-              await member.set_outfit(
-                asset=cosmetic.id,
-                variants = member.create_variant(
-                  parts = num2
-                ) 
-              )
-            elif(channel == "progressive"):
-              await member.set_outfit(
-                asset=cosmetic.id,
-                variants = member.create_variant(
-                  progressive = num2
-                ) 
-              )
-            elif(channel == "particle"):
-              await member.set_outfit(
-                asset=cosmetic.id,
-                variants = member.create_variant(
-                  particle = num2
-                ) 
-              )
-            elif(channel == "emissive"):
-              await member.set_outfit(
-                asset=cosmetic.id,
-                variants = member.create_variant(
-                  emissive = num2
-                ) 
-              )
-            elif(channel == "pattern"):
-              await member.set_outfit(
-                asset=cosmetic.id,
-                variants = member.create_variant(
-                  pattern = num2
-                ) 
-              )
-            style = options[num2-1]
-            variantName = style['name']
+          await member.set_outfit(
+              asset=cosmetic.id,
+              variants = combined_variants
+          )     
+          
+          for v in chosen_variants:
+            variantName = v['name']
+            thumbnailVar = v['image']
+
             embed = discord.Embed(
-              title="Variant Successfully Changed to " + variantName,
+              title=f"Variants Successfully Changed to {variantName}",
               description=member.outfit,
               color=color
             )
             
-            thumbnailVar = style['image']
             try:
               embed.set_thumbnail(url=thumbnailVar)
             except:
@@ -1294,15 +1089,16 @@ async def on_message(message):
             embed.set_author(name="AtomicBot",icon_url=profileimg)
             embed.set_footer(text=footertext)
             await message.author.send(embed=embed)
-            return
               
-        except Exception as e:
+
+        else:
           embed = discord.Embed(
-            title="There are no styles for that skin",
-            description=e,
-            color=color
-          )
+                title="Error: You don't have a bot running!",
+                description="Start a bot with **a!start**",
+                color=color
+              )
           await message.author.send(embed=embed)
+        return
 
       
       if(args[0] == prefix + 'info'):
@@ -1827,38 +1623,38 @@ async def on_message(message):
     await bot.process_commands(message)
     
 
-@bot.command()
-async def extract(ctx, path = None):
-        try:
-          if path is None:
-                  await ctx.send('smh')
+# @bot.command()
+# async def extract(ctx, path = None):
+#         try:
+#           if path is None:
+#                   await ctx.send('smh')
           
-          elif "/Sounds/" in path:
-                  epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
-                  with open("audio.ogg", "wb") as o:
-                          o.write(epic.content)
-                          o.close
-                  await ctx.send(file=discord.File('audio.ogg'))
-                  os.remove('audio.ogg')
+#           elif "/Sounds/" in path:
+#                   epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
+#                   with open("audio.ogg", "wb") as o:
+#                           o.write(epic.content)
+#                           o.close
+#                   await ctx.send(file=discord.File('audio.ogg'))
+#                   os.remove('audio.ogg')
           
-          elif ".mp4" in path:
-                  epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
-                  with open("video.mp4", "wb") as o:
-                          o.write(epic.content)
-                          o.close
-                  await ctx.send(file=discord.File('video.mp4'))
-                  os.remove('video.mp4')                
+#           elif ".mp4" in path:
+#                   epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
+#                   with open("video.mp4", "wb") as o:
+#                           o.write(epic.content)
+#                           o.close
+#                   await ctx.send(file=discord.File('video.mp4'))
+#                   os.remove('video.mp4')                
                   
 
-          else:
-                  epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
-                  with open("image.png", "wb") as o:
-                          o.write(epic.content)
-                          o.close
-                  await ctx.send(file=discord.File('image.png'))
-                  os.remove('image.png')
-        except Exception as e:
-          await ctx.send(e)
+#           else:
+#                   epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
+#                   with open("image.png", "wb") as o:
+#                           o.write(epic.content)
+#                           o.close
+#                   await ctx.send(file=discord.File('image.png'))
+#                   os.remove('image.png')
+#         except Exception as e:
+#           await ctx.send(e)
 
 #TOKENS
       
