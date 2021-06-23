@@ -4,6 +4,7 @@ import os
 from functools import partial
 from typing import Any
 import BenBotAsync
+import aiohttp
 import crayons
 import discord
 import fortnitepy
@@ -96,6 +97,18 @@ def getCosmetic(cosmetic):
   except:
     return None
 
+def channelData(data, channel2) -> None:
+        for d in data:
+          channel = d['channel']
+          if(channel == channel2):
+            if(channel2 ==  "clothing_color" or channel2 == "parts"):
+              return d['number']-1
+            elif(channel2 == "jerseycolor"):
+              return d['tag']
+            else:
+              return d['number']
+        return None
+
 def getBR():
     url = "https://fortnite-api.com/v2/news/br"
 
@@ -131,21 +144,17 @@ def getStats(name, device):
 
     return data['data']
 
-def getVariants(id):
-    url = "https://fortnite-api.com/v2/cosmetics/br/search/"
+async def getVariants(id):
+    try:
+      url = f"https://fortnite-api.com/v2/cosmetics/br/search/?id={id}"
 
-    querystring2 = {"id":id}
+      async with aiohttp.ClientSession() as client:
+        async with client.get(url=url) as r:
+          data = await r.json()
 
-    headers = {
-        'content-type': "application/json",
-        'cache-control': "no-cache",
-        }
-
-    response = requests.request("GET", url, headers=headers,params=querystring2)
-
-    data = json.loads(response.text)
-
-    return data["data"]["variants"][0]
+      return data["data"]["variants"]
+    except:
+      return None
 
 clientToken = "NTIyOWRjZDNhYzM4NDUyMDhiNDk2NjQ5MDkyZjI1MWI6ZTNiZDJkM2UtYmY4Yy00ODU3LTllN2QtZjNkOTQ3ZDIyMGM3"
 
@@ -327,7 +336,7 @@ prefix = 'a!'
 prefixs = "a!","A!"
 
 color = 0xff0000
-footertext = "AtomicBot v2.3 by AtomicXYZ"
+footertext = "AtomicBot v2.4 | By AtomicXYZ"
 
 intents = discord.Intents.default()
 
@@ -340,46 +349,44 @@ class fnAPICosmetic:
     self.id = id
     self.name = name
 
-def getFortniteAPI(name):
+async def getFortniteAPI(name):
   try:
-    url = "https://fortnite-api.com/v2/cosmetics/br/search"
+    url = f"https://fortnite-api.com/v2/cosmetics/br/search?name={name}"
 
-    querystring = {"name":name}
-
-    headers = {
-        'content-type': "application/ json",
-        'cache-control': "no-cache",
-        }
-
-    response = requests.request("GET", url, headers=headers,params=querystring)
-
-    data = json.loads(response.text)
+    async with aiohttp.ClientSession() as client:
+      async with client.get(url=url) as response:
+        data = await response.json()
     return data
   except:
     return None
 
 async def fetch_cosmetic(type_, name) -> None:
     data = None
+    # try:
+    #   data = await BenBotAsync.get_cosmetic(
+    #           lang="en",
+    #           searchLang="en",
+    #           matchMethod="full",
+    #           name=name,
+    #           backendType=type_
+    #       )
+    # except:
+    #     try:
+    #       data = await BenBotAsync.get_cosmetic(
+    #               lang="en",
+    #               searchLang="en",
+    #               matchMethod="contains",
+    #               name=name,
+    #               backendType=type_
+    #           )
+        # except:
     try:
-      data = await BenBotAsync.get_cosmetic(
-              lang="en",
-              searchLang="en",
-              matchMethod="full",
-              name=name,
-              backendType=type_
-          )
+      APIdata1 = await getFortniteAPI(name)
+      APIdata =  APIdata1['data']
+      data = fnAPICosmetic(name=APIdata['name'],id=APIdata['id'])
+      print("Cosmetic Fetched: " + data.name)
     except:
-        try:
-          data = await BenBotAsync.get_cosmetic(
-                  lang="en",
-                  searchLang="en",
-                  matchMethod="contains",
-                  name=name,
-                  backendType=type_
-              )
-        except:
-          APIdata = getFortniteAPI(name)['data']
-          data = fnAPICosmetic(name=APIdata['name'],id=APIdata['id'])
+      data = None
     return data
 
 async def set_and_update_party_prop(self, schema_key: str, new_value: Any) -> None:
@@ -429,14 +436,14 @@ async def on_ready():
         await send_shop(803080074396041218)
         hour = "00 02"
         await asyncio.sleep(60)
-      await bot.change_presence(activity=discord.Game(name="made by AtomicXYZ"))
-      await asyncio.sleep(10)
+      await bot.change_presence(activity=discord.Game(name="by AtomicXYZ"))
+      await asyncio.sleep(5)
       await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=str(len(bot.guilds)) + " Servers"))
-      await asyncio.sleep(10)
-      await bot.change_presence(activity=discord.Game(name="a!help"))
-      await asyncio.sleep(10)
-      await bot.change_presence(activity=discord.Game(name=f"{len(botdict)} bots online"))
-      await asyncio.sleep(10)
+      await asyncio.sleep(5)
+      await bot.change_presence(activity=discord.Game(name="a!start for a bot"))
+      await asyncio.sleep(5)
+      await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(botdict)} bots online"))
+      await asyncio.sleep(5)
     except Exception as e:
       print(e)
       continue
@@ -801,7 +808,8 @@ async def on_message(message):
           )
           await asyncio.sleep(1)
           try:
-            embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.outfit}/icon.png")
+            embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.outfit}/icon.png")
+            # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.outfit}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -833,7 +841,8 @@ async def on_message(message):
           )
           await asyncio.sleep(1)
           try:
-            embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.outfit}/icon.png")
+            embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.outfit}/icon.png")
+            # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.outfit}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -865,7 +874,8 @@ async def on_message(message):
           )
           await asyncio.sleep(1)
           try:
-            embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.pickaxe}/icon.png")
+            embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.pickaxe}/icon.png")
+            # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.pickaxe}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -896,7 +906,8 @@ async def on_message(message):
           )
           await asyncio.sleep(1)
           try:
-            embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.pickaxe}/icon.png")
+            embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.pickaxe}/icon.png")
+            # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.pickaxe}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -977,103 +988,102 @@ async def on_message(message):
           await message.channel.send(embed=embed)
           return
       
-      if(args[0] == prefix + 'style'):
-        cosmetic = await fetch_cosmetic('AthenaCharacter', command)
-        varaints = getVariants(cosmetic.id)
-        options = varaints["options"]
-        try:
-          if(options == None):
-            embed = discord.Embed(
-            title="There are no styles for that skin",
-            color=color
-            )
-            await message.author.send(embed=embed)
-            return
-          else:
-            embed = discord.Embed(
-              title="Styles for " + cosmetic.name,
-              color=color
-            )
-            await message.author.send(embed=embed)
-            count = 1
-            
-            for style in options:
-              name = style['name']
-              img = style['image']
-              embed2 = discord.Embed(
-                title=name,
-                description=f"Type {count} to equip",
+      if(args[0] == prefix + 'style' or args[0] == prefix + 'styles' or args[0] == prefix + 'variant' or args[0] == prefix + 'variants'):
+        if(client):
+          cosmetic = await fetch_cosmetic('AthenaCharacter', command)
+          variants_full = await getVariants(cosmetic.id)
+          count_one = 1
+          chosen_variants = []
+          for variants in variants_full:
+            options = variants["options"]
+            try:
+              if(options == None):
+                embed = discord.Embed(
+                title="There are no styles for that skin",
+                color=color
+                )
+                await message.author.send(embed=embed)
+                return
+              else:
+                embed = discord.Embed(
+                  title=f"Styles for " + cosmetic.name + f" (Page {count_one})",
+                  color=color
+                )
+                await message.author.send(embed=embed)
+                count = 1
+                
+                for style in options:
+                  name = style['name']
+                  img = style['image']
+                  embed2 = discord.Embed(
+                    title=name,
+                    description=f"Type {count} to equip",
+                    color=color
+                  )
+                  embed2.set_thumbnail(url=img)
+                  await message.author.send(embed=embed2)
+                  count += 1
+                
+                def check(msg):
+                  return msg.content and msg.author.id == message.author.id
+
+                msg = await bot.wait_for('message', check=check)
+                member = client.party.me
+                channel = variants['channel'].lower()
+                num2 = int(msg.content)
+                style = options[num2-1]
+                variantName = style['name']
+                thumbnailVar = style['image']
+                tag = ""
+                try:
+                  tag = style['tag']
+                except:
+                  pass
+
+                variant_obj = {}
+                variant_obj['name'] = variantName
+                variant_obj['channel'] = channel
+                variant_obj['number'] = num2
+                variant_obj['image'] = thumbnailVar
+                variant_obj['tag'] = tag
+
+                chosen_variants.append(variant_obj)
+            except Exception as e:
+              embed = discord.Embed(
+                title="There are no styles for that skin",
+                description=e,
                 color=color
               )
-              embed2.set_thumbnail(url=img)
-              await message.author.send(embed=embed2)
-              count += 1
+              await message.author.send(embed=embed)
+            count_one+=1
             
-            def check(msg):
-              return msg.content and msg.author.id == message.author.id
+          combined_variants = member.create_variant(
+            material=channelData(chosen_variants, "material"),
+            clothing_color=channelData(chosen_variants, "clothingcolor"),
+            parts=channelData(chosen_variants, "parts"),
+            progressive=channelData(chosen_variants, "progressive"),
+            particle=channelData(chosen_variants, "particle"),
+            emissive=channelData(chosen_variants, "emissive"),
+            numeric=channelData(chosen_variants, "numeric"),
+            pattern=channelData(chosen_variants, "pattern"),
+            jersey_color=channelData(chosen_variants, "jerseycolor")
+          )
 
-            msg = await bot.wait_for('message', check=check)
-            member = client.party.me
-            channel = varaints['channel'].lower()
-            num2 = int(msg.content)
-            if(channel == "material"):
-              await member.set_outfit(
-                asset=cosmetic.id,
-                variants = member.create_variant(
-                  material=num2
-                )
-              ) 
-            elif(channel == "clothingcolor"):
-              await member.set_outfit(
-                asset=cosmetic.id,
-                variants = member.create_variant(
-                  clothing_color = num2-1
-                ) 
-              )
-            elif(channel == "parts"):
-              await member.set_outfit(
-                asset=cosmetic.id,
-                variants = member.create_variant(
-                  parts = num2
-                ) 
-              )
-            elif(channel == "progressive"):
-              await member.set_outfit(
-                asset=cosmetic.id,
-                variants = member.create_variant(
-                  progressive = num2
-                ) 
-              )
-            elif(channel == "particle"):
-              await member.set_outfit(
-                asset=cosmetic.id,
-                variants = member.create_variant(
-                  particle = num2
-                ) 
-              )
-            elif(channel == "emissive"):
-              await member.set_outfit(
-                asset=cosmetic.id,
-                variants = member.create_variant(
-                  emissive = num2
-                ) 
-              )
-            elif(channel == "pattern"):
-              await member.set_outfit(
-                asset=cosmetic.id,
-                variants = member.create_variant(
-                  pattern = num2
-                ) 
-              )
-            style = options[num2-1]
-            variantName = style['name']
+          await member.set_outfit(
+              asset=cosmetic.id,
+              variants = combined_variants
+          )     
+          
+          for v in chosen_variants:
+            variantName = v['name']
+            thumbnailVar = v['image']
+
             embed = discord.Embed(
-              title="Variant Successfully Changed to " + variantName,
+              title=f"Variants Successfully Changed to {variantName}",
               description=member.outfit,
               color=color
             )
             
-            thumbnailVar = style['image']
             try:
               embed.set_thumbnail(url=thumbnailVar)
             except:
@@ -1081,15 +1091,17 @@ async def on_message(message):
             embed.set_author(name="AtomicBot",icon_url=profileimg)
             embed.set_footer(text=footertext)
             await message.author.send(embed=embed)
-            return
               
-        except Exception as e:
+
+        else:
           embed = discord.Embed(
-            title="There are no styles for that skin",
-            description=e,
-            color=color
-          )
+                title="Error: You don't have a bot running!",
+                description="Start a bot with **a!start**",
+                color=color
+              )
           await message.author.send(embed=embed)
+        return
+
 
       
       if(args[0] == prefix + 'info'):
@@ -1396,7 +1408,8 @@ async def on_message(message):
           color=color
           )
           try:
-            embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.emote}/icon.png")
+            embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.emote}/icon.png")
+            # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.emote}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -1428,7 +1441,8 @@ async def on_message(message):
           color=color
           )
           try:
-            embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.emote}/icon.png")
+            embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.emote}/icon.png")
+            # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.emote}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -1461,7 +1475,8 @@ async def on_message(message):
             color=color
           )
           try:
-            embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.backpack}/icon.png")
+            embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.backpack}/icon.png")
+            # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.backpack}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -1492,7 +1507,8 @@ async def on_message(message):
             color=color
           )
           try:
-            embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.backpack}/icon.png")
+            embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.backpack}/icon.png")
+            # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.backpack}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
