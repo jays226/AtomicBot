@@ -101,7 +101,7 @@ def channelData(data, channel2) -> None:
         for d in data:
           channel = d['channel']
           if(channel == channel2):
-            if(channel2 ==  "clothing_color" or channel2 == "parts"):
+            if(channel2 ==  "clothingcolor" or channel2 == "parts"):
               return d['number']-1
             elif(channel2 == "jerseycolor"):
               return d['tag']
