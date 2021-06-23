@@ -6,13 +6,11 @@ from typing import Any
 import BenBotAsync
 import crayons
 import discord
-from discord.errors import PrivilegedIntentsRequired
 import fortnitepy
 import requests
 from discord.ext import commands
 from datetime import datetime, date
 from EpicEndpoints import EpicEndpoints
-from requests.models import stream_decode_response_unicode
 
 website = "https://atomicxyz.tk/atomicbot/"
 
@@ -147,7 +145,7 @@ def getVariants(id):
 
     data = json.loads(response.text)
 
-    return data["data"]["variants"]
+    return data["data"]["variants"][0]
 
 clientToken = "NTIyOWRjZDNhYzM4NDUyMDhiNDk2NjQ5MDkyZjI1MWI6ZTNiZDJkM2UtYmY4Yy00ODU3LTllN2QtZjNkOTQ3ZDIyMGM3"
 
@@ -244,6 +242,14 @@ def getClient(device_id:str,account_id:str,secret:str,message):
 
     @client.event
     async def event_party_invite(invitation):
+      # embed = discord.Embed(
+      #   title=f"This Feature is Currently Down: Party Invites",
+      #   color=color)
+      # await message.author.send(embed=embed)
+      # embed2 = discord.Embed(
+      #   title=f"Please Instead Join the Bot's Party and type: \"a!privacy private\"",
+      #   color=color)
+      # await message.author.send(embed=embed2)
       
       print(f"Invite from {invitation.sender.display_name}\nBot Owner: {message.author.name}")
       try:
@@ -321,7 +327,7 @@ prefix = 'a!'
 prefixs = "a!","A!"
 
 color = 0xff0000
-footertext = "AtomicBot v2.4 | By AtomicXYZ"
+footertext = "AtomicBot v2.3 by AtomicXYZ"
 
 intents = discord.Intents.default()
 
@@ -424,13 +430,13 @@ async def on_ready():
         hour = "00 02"
         await asyncio.sleep(60)
       await bot.change_presence(activity=discord.Game(name="made by AtomicXYZ"))
-      await asyncio.sleep(5)
+      await asyncio.sleep(10)
       await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=str(len(bot.guilds)) + " Servers"))
-      await asyncio.sleep(5)
-      await bot.change_presence(activity=discord.Game(name="a!start for a bot"))
-      await asyncio.sleep(5)
-      await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"{len(botdict)} bots online"))
-      await asyncio.sleep(5)
+      await asyncio.sleep(10)
+      await bot.change_presence(activity=discord.Game(name="a!help"))
+      await asyncio.sleep(10)
+      await bot.change_presence(activity=discord.Game(name=f"{len(botdict)} bots online"))
+      await asyncio.sleep(10)
     except Exception as e:
       print(e)
       continue
@@ -473,14 +479,13 @@ async def on_message(message):
 
         embed=discord.Embed(
         title="AtomicBot Control Panel",
-        description=f"**1.** [**Click Here**](https://epicgames.com/) **and Log in with an ALT Account**\n\n**2.** [**Click Here**]({data['verification_uri_complete']}) **and click \"confirm\"**\n\n**3. React with ✅ within 10 min**\n\n**React with ❌ cancel**",
+        description=f"**1.** [**Click Here**](https://epicgames.com/) **and Log in with an ALT Account**\n\n**2.** [**Click Here**]({data['verification_uri_complete']}) **and click \"confirm\"**\n\n**3. React with ✅**\n\n**React with ❌ cancel**",
         color=color)
         embed.set_author(name="AtomicBot",icon_url=profileimg)
 
         embed.set_footer(text=footertext)
 
         msgEmbed = await message.author.send(embed=embed)
-
         reactions = ['✅','❌']
         
         for emoji in reactions: 
@@ -823,7 +828,7 @@ async def on_message(message):
           )
           embed = discord.Embed(
             title="Skin Successfully Changed",
-            description=member.skin,
+            description=member.emote,
             color=color
           )
           await asyncio.sleep(1)
@@ -972,116 +977,103 @@ async def on_message(message):
           await message.channel.send(embed=embed)
           return
       
-
-      def channelData(data, channel2) -> None:
-        for d in data:
-          channel = d['channel']
-          if(channel == channel2):
-            if(channel2 ==  "clothing_color" or channel2 == "parts"):
-              return d['number']-1
-            elif(channel2 == "jerseycolor"):
-              return d['tag']
-            else:
-              return d['number']
-        return None
-          
-
-      if(args[0] == prefix + 'style' or args[0] == prefix + 'styles' or args[0] == prefix + 'variant' or args[0] == prefix + 'variants'):
-        if(client):
-          cosmetic = await fetch_cosmetic('AthenaCharacter', command)
-          variants_full = getVariants(cosmetic.id)
-          count_one = 1
-          chosen_variants = []
-          for variants in variants_full:
-            options = variants["options"]
-            try:
-              if(options == None):
-                embed = discord.Embed(
-                title="There are no styles for that skin",
-                color=color
-                )
-                await message.author.send(embed=embed)
-                return
-              else:
-                embed = discord.Embed(
-                  title=f"Styles for " + cosmetic.name + f" (Page {count_one})",
-                  color=color
-                )
-                await message.author.send(embed=embed)
-                count = 1
-                
-                for style in options:
-                  name = style['name']
-                  img = style['image']
-                  embed2 = discord.Embed(
-                    title=name,
-                    description=f"Type {count} to equip",
-                    color=color
-                  )
-                  embed2.set_thumbnail(url=img)
-                  await message.author.send(embed=embed2)
-                  count += 1
-                
-                def check(msg):
-                  return msg.content and msg.author.id == message.author.id
-
-                msg = await bot.wait_for('message', check=check)
-                member = client.party.me
-                channel = variants['channel'].lower()
-                num2 = int(msg.content)
-                style = options[num2-1]
-                variantName = style['name']
-                thumbnailVar = style['image']
-                tag = ""
-                try:
-                  tag = style['tag']
-                except:
-                  pass
-
-                variant_obj = {}
-                variant_obj['name'] = variantName
-                variant_obj['channel'] = channel
-                variant_obj['number'] = num2
-                variant_obj['image'] = thumbnailVar
-                variant_obj['tag'] = tag
-
-                chosen_variants.append(variant_obj)
-            except Exception as e:
-              embed = discord.Embed(
-                title="There are no styles for that skin",
-                description=e,
+      if(args[0] == prefix + 'style'):
+        cosmetic = await fetch_cosmetic('AthenaCharacter', command)
+        varaints = getVariants(cosmetic.id)
+        options = varaints["options"]
+        try:
+          if(options == None):
+            embed = discord.Embed(
+            title="There are no styles for that skin",
+            color=color
+            )
+            await message.author.send(embed=embed)
+            return
+          else:
+            embed = discord.Embed(
+              title="Styles for " + cosmetic.name,
+              color=color
+            )
+            await message.author.send(embed=embed)
+            count = 1
+            
+            for style in options:
+              name = style['name']
+              img = style['image']
+              embed2 = discord.Embed(
+                title=name,
+                description=f"Type {count} to equip",
                 color=color
               )
-              await message.author.send(embed=embed)
-            count_one+=1
+              embed2.set_thumbnail(url=img)
+              await message.author.send(embed=embed2)
+              count += 1
             
-          combined_variants = member.create_variant(
-            material=channelData(chosen_variants, "material"),
-            clothing_color=channelData(chosen_variants, "clothingcolor"),
-            parts=channelData(chosen_variants, "parts"),
-            progressive=channelData(chosen_variants, "progressive"),
-            particle=channelData(chosen_variants, "particle"),
-            emissive=channelData(chosen_variants, "emissive"),
-            numeric=channelData(chosen_variants, "numeric"),
-            pattern=channelData(chosen_variants, "pattern"),
-            jersey_color=channelData(chosen_variants, "jerseycolor")
-          )
+            def check(msg):
+              return msg.content and msg.author.id == message.author.id
 
-          await member.set_outfit(
-              asset=cosmetic.id,
-              variants = combined_variants
-          )     
-          
-          for v in chosen_variants:
-            variantName = v['name']
-            thumbnailVar = v['image']
-
+            msg = await bot.wait_for('message', check=check)
+            member = client.party.me
+            channel = varaints['channel'].lower()
+            num2 = int(msg.content)
+            if(channel == "material"):
+              await member.set_outfit(
+                asset=cosmetic.id,
+                variants = member.create_variant(
+                  material=num2
+                )
+              ) 
+            elif(channel == "clothingcolor"):
+              await member.set_outfit(
+                asset=cosmetic.id,
+                variants = member.create_variant(
+                  clothing_color = num2-1
+                ) 
+              )
+            elif(channel == "parts"):
+              await member.set_outfit(
+                asset=cosmetic.id,
+                variants = member.create_variant(
+                  parts = num2
+                ) 
+              )
+            elif(channel == "progressive"):
+              await member.set_outfit(
+                asset=cosmetic.id,
+                variants = member.create_variant(
+                  progressive = num2
+                ) 
+              )
+            elif(channel == "particle"):
+              await member.set_outfit(
+                asset=cosmetic.id,
+                variants = member.create_variant(
+                  particle = num2
+                ) 
+              )
+            elif(channel == "emissive"):
+              await member.set_outfit(
+                asset=cosmetic.id,
+                variants = member.create_variant(
+                  emissive = num2
+                ) 
+              )
+            elif(channel == "pattern"):
+              await member.set_outfit(
+                asset=cosmetic.id,
+                variants = member.create_variant(
+                  pattern = num2
+                ) 
+              )
+            style = options[num2-1]
+            variantName = style['name']
             embed = discord.Embed(
-              title=f"Variants Successfully Changed to {variantName}",
+              title="Variant Successfully Changed to " + variantName,
               description=member.outfit,
               color=color
             )
             
+            thumbnailVar = style['image']
             try:
               embed.set_thumbnail(url=thumbnailVar)
             except:
@@ -1089,16 +1081,15 @@ async def on_message(message):
             embed.set_author(name="AtomicBot",icon_url=profileimg)
             embed.set_footer(text=footertext)
             await message.author.send(embed=embed)
+            return
               
-
-        else:
+        except Exception as e:
           embed = discord.Embed(
-                title="Error: You don't have a bot running!",
-                description="Start a bot with **a!start**",
-                color=color
-              )
+            title="There are no styles for that skin",
+            description=e,
+            color=color
+          )
           await message.author.send(embed=embed)
-        return
 
       
       if(args[0] == prefix + 'info'):
@@ -1606,8 +1597,6 @@ async def on_message(message):
           title=
           "Click here to invite AtomicBot to your own Discord Server!",
           url="https://discord.com/api/oauth2/authorize?client_id=829050201648922645&permissions=387136&scope=bot",
-          description=
-          "Use " + prefix + "start to get a bot!",
           color=color)
         await message.channel.send(embed=embeddone)
         return
