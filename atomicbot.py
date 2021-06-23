@@ -1623,38 +1623,38 @@ async def on_message(message):
     await bot.process_commands(message)
     
 
-# @bot.command()
-# async def extract(ctx, path = None):
-#         try:
-#           if path is None:
-#                   await ctx.send('smh')
+@bot.command()
+async def extract(ctx, path = None):
+        try:
+          if path is None:
+                  await ctx.send('smh')
           
-#           elif "/Sounds/" in path:
-#                   epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
-#                   with open("audio.ogg", "wb") as o:
-#                           o.write(epic.content)
-#                           o.close
-#                   await ctx.send(file=discord.File('audio.ogg'))
-#                   os.remove('audio.ogg')
+          elif "/Sounds/" in path:
+                  epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
+                  with open("audio.ogg", "wb") as o:
+                          o.write(epic.content)
+                          o.close
+                  await ctx.send(file=discord.File('audio.ogg'))
+                  os.remove('audio.ogg')
           
-#           elif ".mp4" in path:
-#                   epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
-#                   with open("video.mp4", "wb") as o:
-#                           o.write(epic.content)
-#                           o.close
-#                   await ctx.send(file=discord.File('video.mp4'))
-#                   os.remove('video.mp4')                
+          elif ".mp4" in path:
+                  epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
+                  with open("video.mp4", "wb") as o:
+                          o.write(epic.content)
+                          o.close
+                  await ctx.send(file=discord.File('video.mp4'))
+                  os.remove('video.mp4')                
                   
 
-#           else:
-#                   epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
-#                   with open("image.png", "wb") as o:
-#                           o.write(epic.content)
-#                           o.close
-#                   await ctx.send(file=discord.File('image.png'))
-#                   os.remove('image.png')
-#         except Exception as e:
-#           await ctx.send(e)
+          else:
+                  epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
+                  with open("image.png", "wb") as o:
+                          o.write(epic.content)
+                          o.close
+                  await ctx.send(file=discord.File('image.png'))
+                  os.remove('image.png')
+        except Exception as e:
+          await ctx.send(e)
 
 #TOKENS
       
