@@ -14,6 +14,8 @@ from datetime import datetime, date
 from EpicEndpoints import EpicEndpoints
 
 website = "https://atomicxyz.tk/atomicbot/"
+tutorial = "https://youtu.be/Mo1p69GGuas"
+lobbybot_commands = "**Cosmetic Commands**\na!skin `name` - Changes the bot's skin\na!emote `name` - Changes the bot's emote\na!backpack `name` - Changes the bot's backbling\na!pickaxe `name` - Changes the bot's pickaxe\na!level `number` - Changes the bot's level\na!style `cosmetic name` - Changes the style/variant of a cosmetic\na!hide/a!unhide - Hides and unhides the bot's party members\na!pinkghoul - Changes to the pink ghoul trooper skin\na!purpleskull - Changes to the purple skull trooper skin\na!cid/eid/pid/bid `id` - Changes the bot's cosmetic by cosmetic ID\n\n**Utility Commands**\na!ready/a!unready - Changes the bot to the ready/unready state\na!say `message` - Makes the bot send a message to party\na!privacy `public/private` - Changes the bot's party privacy\na!sitin/a!sitout - Makes the bot sit in or sit out\na!match/a!unmatch - Changes the bot's status to in-match"
 
 # myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 
@@ -336,7 +338,7 @@ prefix = 'a!'
 prefixs = "a!","A!"
 
 color = 0xff0000
-footertext = "AtomicBot v2.4 | By AtomicXYZ"
+footertext = "AtomicBot v2.5 | By AtomicXYZ"
 
 intents = discord.Intents.default()
 
@@ -422,7 +424,7 @@ def getBots():
   return data
 
 emoteseconds = 60
-expiretime = 120
+expiretime = 180
 profileimg = "https://cdn.discordapp.com/avatars/829050201648922645/d8d62960d600af3975b61735ccc5e90c.png?size=128"
 
 @bot.event
@@ -550,7 +552,7 @@ async def on_message(message):
           for task in tasks:
             task.cancel
 
-        if(client.is_ready()):
+        if(tasks[1] in done):
           botdict[message.author.id] = client
           client_info = {'name' : client.user.display_name, 'id' : client.user.id}
           # storeCurrentBot(message.author.id, client_info)
@@ -564,14 +566,14 @@ async def on_message(message):
           await edit_and_keep_client_member(client)
           embed = discord.Embed(
             title=f"Bot Control Panel for {client.user.display_name}",
-            description=f"**Bot Info**\nYour Bot will expire in **{expiretime} min**\nType **" + prefix + "stop** to stop your bot\n\n**Cosmetic Commands**\na!skin `name` - Changes the bot's skin\na!emote `name` - Changes the bot's emote\na!backpack `name` - Changes the bot's backbling\na!pickaxe `name` - Changes the bot's pickaxe\na!level `number` - Changes the bot's level\na!style `cosmetic name` - Changes the style/variant of a cosmetic\na!hide/a!unhide - Hides and unhides the bot's party members\na!pinkghoul - Changes to the pink ghoul trooper skin\na!purpleskull - Changes to the purple skull trooper skin\na!cid/eid/pid/bid `id` - Changes the bot's cosmetic by cosmetic ID\n\n**Utility Commands**\na!ready/a!unready - Changes the bot to the ready/unready state\na!say `message` - Makes the bot send a message to party\na!privacy `public/private` - Changes the bot's party privacy\na!sitin/a!sitout - Makes the bot sit in or sit out\na!match/a!unmatch - Changes the bot's status to in-match\na!help - Sends the help message",
+            description=f"**Bot Info**\nYour Bot will expire in **{expiretime} min**\nType **" + prefix + f"stop** to stop your bot\n\n{lobbybot_commands}\na!help - Sends the help message",
             color=color)
           embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{client.party.me.outfit}/icon.png")
           embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           embed2 = discord.Embed(
             title="❗Important",
-            description="**Watch this video if you need help:** https://youtu.be/YPZMTIET3S8\n**Join the support server:** https://discord.gg/qJqMaTfVK9",
+            description=f"**Watch this video if you need help:** {tutorial}\n**Join the support server:** https://discord.gg/qJqMaTfVK9",
             color=color
           )
 
@@ -743,10 +745,11 @@ async def on_message(message):
           await asyncio.sleep(1)
 
       if(args[0] == prefix + 'help'):
+        general_commands = f"a!news - Shows the current battle royale news\na!stats `epic games username` - Shows the stats of a player\na!shop - Shows the daily item shop\na!invite - Sends the invite link of the bot\na!help - Sends this message\n\n**Tutorial:** {tutorial}\n**Support Server:** https://discord.gg/qJqMaTfVK9\n**Website:** {website}"
         if(client):
           embed = discord.Embed(
             title=f"Help Page",
-            description=f"**Cosmetic Commands**\na!skin `name` - Changes the bot's skin\na!emote `name` - Changes the bot's emote\na!backpack `name` - Changes the bot's backbling\na!pickaxe `name` - Changes the bot's pickaxe\na!level `number` - Changes the bot's level\na!style `cosmetic name` - Changes the style/variant of a cosmetic\na!hide/a!unhide - Hides and unhides the bot's party members\na!pinkghoul - Changes to the pink ghoul trooper skin\na!purpleskull - Changes to the purple skull trooper skin\na!cid/eid/pid/bid `id` - Changes the bot's cosmetic by cosmetic ID\n\n**Utility Commands**\na!ready/a!unready - Changes the bot to the ready/unready state\na!say `message` - Makes the bot send a message to party\na!privacy `public/private` - Changes the bot's party privacy\na!sitin/a!sitout - Makes the bot sit in or sit out\na!match/a!unmatch - Changes the bot's status to in-match\n\n**General Commands**\na!news - Shows the current battle royale news\na!stats `epic games username` - Shows the stats of a player\na!shop - Shows the daily item shop\na!invite - Sends the invite link of the bot\na!help - Sends this message\n\n**Support Server:** https://discord.gg/qJqMaTfVK9\n**Website:** {website}",
+            description=f"{lobbybot_commands}\n\n**General Commands**\n{general_commands}",
             color=color
           )
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -758,7 +761,7 @@ async def on_message(message):
         else:
           embed = discord.Embed(
             title=f"AtomicBot Help",
-            description=f"**Create a bot to see the full commands!**\na!news - Shows the current battle royale news\na!stats `epic games username` - Shows the stats of a player\na!shop - Shows the daily item shop\na!invite - Sends the invite link of the bot\na!help - Sends this message\n\n**Support Server:** https://discord.gg/qJqMaTfVK9\n**Website:** {website}",
+            description=f"**Create a bot to see the full commands!**\n{general_commands}",
             color=color
           )
           embed.set_thumbnail(url="https://media.discordapp.net/attachments/836446331992145950/836719691459461180/AtomicLogo.png")
@@ -956,8 +959,9 @@ async def on_message(message):
 
       if(args[0] == prefix + 'search'):
         try:
-          data1 = getCosmetic(command)
-          data = data1['info']
+          data1 = await getFortniteAPI(command)
+          
+          data = data1['data']
           
           embed = discord.Embed(
             title=data['name'],
@@ -970,10 +974,9 @@ async def on_message(message):
             inline=False
           )
           try:
-            embed.set_thumbnail(url=data1['images']['icon'])
+            embed.set_thumbnail(url=data['images']['icon'])
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.channel.send(embed=embed)
           return
@@ -1219,27 +1222,27 @@ async def on_message(message):
           await message.author.send(embed=embed)
           return
 
-      if(args[0] == prefix + 'clearemote'):
-        member = client.party.me
-        try:
-          await member.clear_emote()
-          embed = discord.Embed(
-            title="Emote Cleared",
-            color=color
-          )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error",
-            color=color
-          )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
+      # if(args[0] == prefix + 'clearemote'):
+      #   member = client.party.me
+      #   try:
+      #     await member.clear_emote()
+      #     embed = discord.Embed(
+      #       title="Emote Cleared",
+      #       color=color
+      #     )
+      #     embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #     embed.set_footer(text=footertext)
+      #     await message.author.send(embed=embed)
+      #     return
+      #   except:
+      #     embed = discord.Embed(
+      #       title="Error",
+      #       color=color
+      #     )
+      #     embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #     embed.set_footer(text=footertext)
+      #     await message.author.send(embed=embed)
+      #     return
       
       if(args[0] == prefix + 'sitout'):
         member = client.party.me
@@ -1398,6 +1401,16 @@ async def on_message(message):
         cosmetic = await fetch_cosmetic('AthenaDance', command)
         member = client.party.me
         try:
+
+          if(args[1] == 'none' or args[1] == 'clear'):
+            await member.clear_emote()
+            embed = discord.Embed(
+              title="Emote Cleared",
+              color=color
+            )
+            await message.author.send(embed=embed)
+            return
+
           await member.set_emote(
             asset=cosmetic.id,
             run_for=emoteseconds
@@ -1417,10 +1430,10 @@ async def on_message(message):
           await message.author.send(embed=embed)
           return
           
-        except:
+        except Exception as e:
           embed = discord.Embed(
             title="Error: Invalid Emote/ID",
-            description="Make sure you type the name correctly!",
+            description=f"Error: {e}",
             color=color
           )
           embed.set_author(name="AtomicBot",icon_url=profileimg)
@@ -1465,6 +1478,16 @@ async def on_message(message):
         cosmetic = await fetch_cosmetic('AthenaBackpack', command)
         member = client.party.me
         try:
+          
+          if(args[1] == 'none' or args[1] == 'clear'):
+            await member.clear_backpack()
+            embed = discord.Embed(
+              title="Backpack Cleared",
+              color=color
+            )
+            await message.author.send(embed=embed)
+            return
+          
           await member.set_backpack(
             asset=cosmetic.id,
             variants = None
