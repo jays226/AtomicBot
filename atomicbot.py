@@ -62,8 +62,8 @@ lobbybot_commands = "**Cosmetic Commands**\na!skin `name` - Changes the bot's sk
 #     print("Deleted current_bots")
 
 #EPIC GAMES REQUESTS
-def getDisplayName(account_id):
-  access_token = getAccessToken()
+async def getDisplayName(account_id):
+  access_token = await getAccessToken()
 
   url = "https://account-public-service-prod.ol.epicgames.com/account/api/public/account/"
 
@@ -160,7 +160,7 @@ async def getVariants(id):
 
 clientToken = "NTIyOWRjZDNhYzM4NDUyMDhiNDk2NjQ5MDkyZjI1MWI6ZTNiZDJkM2UtYmY4Yy00ODU3LTllN2QtZjNkOTQ3ZDIyMGM3"
 
-def getAccessToken():
+async def getAccessToken():
     url = "https://account-public-service-prod.ol.epicgames.com/account/api/oauth/token"
 
     payload = "grant_type=client_credentials"
@@ -170,50 +170,46 @@ def getAccessToken():
         'cache-control': "no-cache",
         }
 
-    response = requests.request("POST", url, data=payload, headers=headers)
-
-    data = json.loads(response.text)
+    async with aiohttp.ClientSession() as client:
+      async with client.post(url=url,data=payload,headers=headers) as r:
+        data = await r.json()
 
     access_token = data['access_token']
-    expire = data['expires_in']
 
     return access_token
 
-def getDeviceCode(access_token):
-    url2 = "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/deviceAuthorization"
+async def getDeviceCode(access_token):
+    url = "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/deviceAuthorization?prompt=login"
 
-    querystring2 = {"prompt":"login"}
-
-    payload2 = "prompt=promptType"
-    headers2 = {
+    payload = "prompt=promptType"
+    headers = {
         'content-type': "application/x-www-form-urlencoded",
         'authorization': f"bearer {access_token}",
         'cache-control': "no-cache",
         }
 
-    response2 = requests.request("POST", url2, data=payload2, headers=headers2, params=querystring2)
+    async with aiohttp.ClientSession() as client:
+      async with client.post(url=url,data=payload,headers=headers) as r:
+        data = await r.json()
 
-    data2 = json.loads(response2.text)
+    return data
 
-    return data2
+async def getDeviceAuth(devicecode):
+    url = "https://account-public-service-prod.ol.epicgames.com/account/api/oauth/token"
 
-def getDeviceAuth(devicecode):
-    url3 = "https://account-public-service-prod.ol.epicgames.com/account/api/oauth/token"
-
-    payload3 = f"grant_type=device_code&device_code={devicecode}"
-    headers3 = {
+    payload = f"grant_type=device_code&device_code={devicecode}"
+    headers = {
         'content-type': "application/x-www-form-urlencoded",
         'authorization': f"basic {clientToken}",
         'cache-control': "no-cache",
         }
+    async with aiohttp.ClientSession() as client:
+      async with client.post(url=url,data=payload,headers=headers) as r:
+        data = await r.json()
 
-    response3 = requests.request("POST", url3, data=payload3, headers=headers3)
+    return data
 
-    data3 = json.loads(response3.text)
-
-    return data3
-
-def getIDs(access_token,account_id):
+async def getIDs(access_token,account_id):
   url = f"https://account-public-service-prod.ol.epicgames.com/account/api/public/account/{account_id}/deviceAuth"
 
   headers = {
@@ -222,9 +218,9 @@ def getIDs(access_token,account_id):
       'cache-control': "no-cache",
       }
 
-  response = requests.request("POST", url, headers=headers)
-
-  data = json.loads(response.text)
+  async with aiohttp.ClientSession() as client:
+      async with client.post(url=url,headers=headers) as r:
+        data = await r.json()
 
   return data
 
@@ -373,15 +369,15 @@ async def fetch_cosmetic(type_, name) -> None:
     #           backendType=type_
     #       )
     # except:
-    #     try:
-    #       data = await BenBotAsync.get_cosmetic(
-    #               lang="en",
-    #               searchLang="en",
-    #               matchMethod="contains",
-    #               name=name,
-    #               backendType=type_
-    #           )
-        # except:
+    #   try:
+    #     data = await BenBotAsync.get_cosmetic(
+    #             lang="en",
+    #             searchLang="en",
+    #             matchMethod="contains",
+    #             name=name,
+    #             backendType=type_
+    #         )
+    #   except:
     try:
       APIdata1 = await getFortniteAPI(name)
       APIdata =  APIdata1['data']
@@ -478,20 +474,19 @@ async def on_message(message):
           title="Error: Bot Currently Running",
           description="Stop the bot with " + prefix + "stop, then type " + prefix + "start", 
           color=color)
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
 
-        access_token = getAccessToken()
-        data = getDeviceCode(access_token)
+        access_token = await getAccessToken()
+        data = await getDeviceCode(access_token)
 
         embed=discord.Embed(
         title="AtomicBot Control Panel",
-        description=f"**1.** [**Click Here**](https://epicgames.com/) **and Log in with an ALT Account**\n\n**2.** [**Click Here**]({data['verification_uri_complete']}) **and click \"confirm\"**\n\n**3. React with ✅**\n\n**React with ❌ cancel**",
+        description=f"**•** [**Login**](https://epicgames.com) with an **ALT** Epic Games Account\n**•** [**Click Here**]({data['verification_uri_complete']}) and click **CONFIRM**\n**•** **React with** ✅ within **10 minutes**",
         color=color)
-        embed.set_author(name="AtomicBot",icon_url=profileimg)
-
+         
         embed.set_footer(text=footertext)
 
         msgEmbed = await message.author.send(embed=embed)
@@ -504,8 +499,8 @@ async def on_message(message):
 
         if reaction.emoji.name == '✅':
           try:
-            data2 = getDeviceAuth(data['device_code'])
-            dataID = getIDs(data2['access_token'],data2['account_id'])
+            data2 = await getDeviceAuth(data['device_code'])
+            dataID = await getIDs(data2['access_token'],data2['account_id'])
             
             device = dataID['deviceId']
             account = dataID['accountId']
@@ -516,9 +511,9 @@ async def on_message(message):
             print(f"Bot creation error: {e}")
             await asyncio.sleep(1)
             embed=discord.Embed(
-              title="Error: Please complete __Step 2__ and click \"Confirm\" before clicking ✅",
+              title="Error: Please complete __Step 2__ and click **CONFIRM** before clicking ✅",
               color=color)
-            embed.set_author(name="AtomicBot",icon_url=profileimg)
+             
 
             embed.set_footer(text=footertext)
 
@@ -565,11 +560,11 @@ async def on_message(message):
           print(crayons.green(f'Bot ready as {client.user.display_name}'))
           await edit_and_keep_client_member(client)
           embed = discord.Embed(
-            title=f"Bot Control Panel for {client.user.display_name}",
-            description=f"**Bot Info**\nYour Bot will expire in **{expiretime} min**\nType **" + prefix + f"stop** to stop your bot\n\n{lobbybot_commands}\na!help - Sends the help message",
+            title=f"Lobby Bot Control Panel | {client.user.display_name}",
+            description=f"**Bot Info**\nSend a friend request to **{client.user.display_name}** on Fortnite\nYour Bot will expire in **{expiretime} min**\nType **" + prefix + f"stop** to stop your bot\n\n{lobbybot_commands}\na!help - Sends the help message",
             color=color)
           embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{client.party.me.outfit}/icon.png")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           embed2 = discord.Embed(
             title="❗Important",
@@ -602,7 +597,7 @@ async def on_message(message):
             title="Bot was unable to start!",
             description="You can create a new bot with " + prefix + "start",
             color=color)
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -613,7 +608,7 @@ async def on_message(message):
       #       title="Would you like to save this bot?",
       #       description=f"**React with ✅ to save the bot**\n\n**React with ❌ cancel**",
       #       color=color)
-      #     embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #      
 
       #     embed.set_footer(text=footertext)
 
@@ -633,13 +628,13 @@ async def on_message(message):
       #         embed=discord.Embed(
       #         title="Bot Successfully Saved ✅",
       #         color=color)
-      #         embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #          
       #         await message.author.send(embed=embed)
       #       elif(len(getUserBots(message.author.id)) >= 3):
       #         embed=discord.Embed(
       #           title="Error: You currently have the max amount of bots saved",
       #           color=color)
-      #         embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #          
       #         embed.set_footer(text=footertext)
       #         await message.author.send(embed=embed)
       #         return
@@ -650,7 +645,7 @@ async def on_message(message):
       #     embed=discord.Embed(
       #       title="An Error Occurred with Saving Your Bot",
       #       color=color)
-      #     embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #      
       #     embed.set_footer(text=footertext)
       #     await message.author.send(embed=embed)
       
@@ -661,7 +656,7 @@ async def on_message(message):
       #         title="You already have a client running, would you like to cancel it and load a new bot?",
       #         description=f"**React with ✅ to load a new bot**\n\n**React with ❌ cancel**",
       #         color=color)
-      #       embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #        
 
       #       embed.set_footer(text=footertext)
 
@@ -708,7 +703,7 @@ async def on_message(message):
       #       title=f"Saved Bots for {message.author.name}",
       #       description=botsString,
       #       color=color)
-      #     embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #      
       #     embed.set_footer(text=footertext)
       #     loadmsg = message.author.send(embed=embed)
       #     nums = ['1️⃣','2️⃣','3️⃣']
@@ -720,7 +715,7 @@ async def on_message(message):
       #       title="You have no bots saved!",
       #       description="Save a bot with **" + prefix + "save** while you have a bot running",
       #       color=color)
-      #     embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #      
       #     embed.set_footer(text=footertext)
       #     await message.author.send(embed=embed)
       #     return
@@ -745,14 +740,14 @@ async def on_message(message):
           await asyncio.sleep(1)
 
       if(args[0] == prefix + 'help'):
-        general_commands = f"a!news - Shows the current battle royale news\na!stats `epic games username` - Shows the stats of a player\na!shop - Shows the daily item shop\na!invite - Sends the invite link of the bot\na!help - Sends this message\n\n**Tutorial:** {tutorial}\n**Support Server:** https://discord.gg/qJqMaTfVK9\n**Website:** {website}"
+        general_commands = f"a!search `cosmetic` - searches for a cosmetic\na!news - Shows the current battle royale news\na!stats `username` - Shows the stats of a player\na!shop - Shows the daily item shop\na!invite - Sends the invite link of the bot\na!help - Sends this message\n\n**Tutorial:** {tutorial}\n**Support Server:** https://discord.gg/qJqMaTfVK9\n**Website:** {website}"
         if(client):
           embed = discord.Embed(
             title=f"Help Page",
             description=f"{lobbybot_commands}\n\n**General Commands**\n{general_commands}",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           
           await message.author.send(embed=embed)
@@ -766,7 +761,7 @@ async def on_message(message):
           )
           embed.set_thumbnail(url="https://media.discordapp.net/attachments/836446331992145950/836719691459461180/AtomicLogo.png")
         
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           
           await message.channel.send(embed=embed)
@@ -815,7 +810,7 @@ async def on_message(message):
             # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.outfit}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -825,7 +820,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -848,7 +843,7 @@ async def on_message(message):
             # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.outfit}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -858,7 +853,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -881,7 +876,7 @@ async def on_message(message):
             # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.pickaxe}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -891,7 +886,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -913,7 +908,7 @@ async def on_message(message):
             # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.pickaxe}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -923,7 +918,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -942,7 +937,7 @@ async def on_message(message):
             color=color
         )
         embed.set_image(url=img)
-        embed.set_author(name="AtomicBot",icon_url=profileimg)
+         
         embed.set_footer(text=footertext)
         await message.channel.send(embed=embed)
         return
@@ -986,7 +981,6 @@ async def on_message(message):
           description=e,
           color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.channel.send(embed=embed)
           return
@@ -1091,7 +1085,7 @@ async def on_message(message):
               embed.set_thumbnail(url=thumbnailVar)
             except:
               embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-            embed.set_author(name="AtomicBot",icon_url=profileimg)
+             
             embed.set_footer(text=footertext)
             await message.author.send(embed=embed)
               
@@ -1137,7 +1131,7 @@ async def on_message(message):
           value=website,
           inline=False
         )
-        embed.set_author(name="AtomicBot",icon_url=profileimg)
+         
         embed.set_footer(text=footertext)
         await message.channel.send(embed=embed)
         return
@@ -1149,10 +1143,8 @@ async def on_message(message):
           await member.set_ready(fortnitepy.ReadyState.READY)
           embed = discord.Embed(
             title="Bot set to Ready",
-            description="Ready State: Ready",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1162,7 +1154,6 @@ async def on_message(message):
             description="Make sure the bot is not already in the ready state!",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1176,7 +1167,7 @@ async def on_message(message):
               title="Bot set to In-Match Status with " + args[1] + " players remaining",
               color=color
             )
-            embed.set_author(name="AtomicBot",icon_url=profileimg)
+
             embed.set_footer(text=footertext)
             await message.author.send(embed=embed)
           else:
@@ -1185,7 +1176,7 @@ async def on_message(message):
               title="Bot set to In-Match Status with 100 players remaining",
               color=color
             )
-            embed.set_author(name="AtomicBot",icon_url=profileimg)
+
             embed.set_footer(text=footertext)
             await message.author.send(embed=embed)
           return
@@ -1195,7 +1186,7 @@ async def on_message(message):
             description="Please provide a number or players remaining",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1208,7 +1199,7 @@ async def on_message(message):
             title="In-Match Status Cancelled",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1217,7 +1208,7 @@ async def on_message(message):
             title="Error: Incorrect Command",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1230,7 +1221,7 @@ async def on_message(message):
       #       title="Emote Cleared",
       #       color=color
       #     )
-      #     embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #      
       #     embed.set_footer(text=footertext)
       #     await message.author.send(embed=embed)
       #     return
@@ -1239,7 +1230,7 @@ async def on_message(message):
       #       title="Error",
       #       color=color
       #     )
-      #     embed.set_author(name="AtomicBot",icon_url=profileimg)
+      #      
       #     embed.set_footer(text=footertext)
       #     await message.author.send(embed=embed)
       #     return
@@ -1252,10 +1243,9 @@ async def on_message(message):
 
           embed = discord.Embed(
             title="Bot set to Sitting Out",
-            description="Ready State: Sitting Out",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1265,7 +1255,7 @@ async def on_message(message):
             description="Make sure the bot is not already in the sitting out state!",
             color=color
           )
-          embed.set_author(name="AtomicBot")
+
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1278,10 +1268,8 @@ async def on_message(message):
 
           embed = discord.Embed(
               title="Bot set to Not Ready",
-              description="Ready State: Not Ready",
               color=color
             )
-          embed.set_author(name="AtomicBot")
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1291,7 +1279,6 @@ async def on_message(message):
             description="Make sure the bot is not already in the ready state!",
             color=color
           )
-          embed.set_author(name="AtomicBot")
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1304,10 +1291,8 @@ async def on_message(message):
               await member.set_privacy(fortnitepy.PartyPrivacy.PRIVATE)
               embed = discord.Embed(
                 title="Party Privacy Set to Private",
-                description="Privacy: Private",
                 color=color
               )
-              embed.set_author(name="AtomicBot",icon_url=profileimg)
               embed.set_footer(text=footertext)
               await message.author.send(embed=embed)
               return
@@ -1315,10 +1300,8 @@ async def on_message(message):
               await member.set_privacy(fortnitepy.PartyPrivacy.PUBLIC)
               embed = discord.Embed(
                 title="Party Privacy Set to Public",
-                description="Privacy: Public",
                 color=color
               )
-              embed.set_author(name="AtomicBot",icon_url=profileimg)
               embed.set_footer(text=footertext)
               await message.author.send(embed=embed)
               return
@@ -1328,7 +1311,6 @@ async def on_message(message):
             description="Make sure the bot is party leader and you typed **private or public**!",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1350,7 +1332,7 @@ async def on_message(message):
             color=color
           )
           embed.set_thumbnail(url=f"https://i.pinimg.com/originals/36/92/ee/3692eea092dce62732b7b65ab2f8cd1b.png")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1360,7 +1342,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1382,7 +1364,7 @@ async def on_message(message):
             color=color
           )
           embed.set_thumbnail(url=f"https://i.redd.it/sgnjl7agwdl51.png")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1392,7 +1374,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1410,22 +1392,22 @@ async def on_message(message):
             )
             await message.author.send(embed=embed)
             return
-
+          await member.clear_emote()
           await member.set_emote(
             asset=cosmetic.id,
             run_for=emoteseconds
           )
           embed = discord.Embed(
-          title="Emote Successfully Changed to " + cosmetic.name,
-          description=cosmetic.id,
-          color=color
+            title="Emote Successfully Changed to " + cosmetic.name,
+            description=cosmetic.id,
+            color=color
           )
           try:
             embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.emote}/icon.png")
             # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.emote}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+          
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1436,7 +1418,7 @@ async def on_message(message):
             description=f"Error: {e}",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1444,6 +1426,7 @@ async def on_message(message):
       if(args[0] == prefix + 'eid'):
         member = client.party.me
         try:
+          await member.clear_emote()
           await member.set_emote(
             asset=args[1],
             run_for=emoteseconds
@@ -1458,7 +1441,7 @@ async def on_message(message):
             # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.emote}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1469,7 +1452,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1502,7 +1485,7 @@ async def on_message(message):
             # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.backpack}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1512,7 +1495,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1534,7 +1517,7 @@ async def on_message(message):
             # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.backpack}/icon.png")
           except:
             embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1544,7 +1527,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1559,7 +1542,7 @@ async def on_message(message):
             description = "Current Level: " + command,
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1569,7 +1552,7 @@ async def on_message(message):
             description="Make sure you type the name correctly!",
             color=color
           )
-          embed.set_author(name="AtomicBot",icon_url=profileimg)
+           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
