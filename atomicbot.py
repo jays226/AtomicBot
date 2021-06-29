@@ -549,8 +549,6 @@ async def on_message(message):
 
         if(tasks[1] in done):
           botdict[message.author.id] = client
-          client_info = {'name' : client.user.display_name, 'id' : client.user.id}
-          # storeCurrentBot(message.author.id, client_info)
           savedauths[message.author.id] = {
             'device_id' : device,
             'account_id' : account,
@@ -578,18 +576,25 @@ async def on_message(message):
 
           await asyncio.sleep(expiretime*60)
 
-          del botdict[message.author.id]
           await client.close(close_http=True,dispatch_close=True)
           if(client.is_closed):
             print(crayons.red(f"Bot cancelled {client.user.display_name}"))
-          
-          embeddone = discord.Embed(
+            del botdict[message.author.id]
+            embeddone = discord.Embed(
             title=
             "Bot Expired!",
             description=
             "Restart Bot by typing " + prefix + "start",
             color=color)
-          await message.author.send(embed=embeddone)
+            await message.author.send(embed=embeddone)
+          else:
+            embed = discord.Embed(
+            title=
+            "There was an error stopping your bot!",
+            description=
+            "Type a!stop again",
+            color=color)
+            await message.author.send(embed=embed)
           return
 
         else:
@@ -769,18 +774,26 @@ async def on_message(message):
     
       if(args[0] == prefix + 'stop' or args[0] == prefix + 'stopbot'):
         if(client):
-          del botdict[message.author.id]
           await client.close(close_http=True,dispatch_close=True)
           if(client.is_closed):
             print(crayons.red(f"Bot cancelled {client.user.display_name}"))
-          
-          embeddone = discord.Embed(
+            del botdict[message.author.id]
+            embeddone = discord.Embed(
             title=
             "Bot Cancelled!",
             description=
             "Restart Bot by typing " + prefix + "start",
             color=color)
-          await message.author.send(embed=embeddone)
+            await message.author.send(embed=embeddone)
+          else:
+            embed = discord.Embed(
+            title=
+            "There was an error stopping your bot!",
+            description=
+            "Type a!stop again",
+            color=color)
+            await message.author.send(embed=embed)
+
         else:
           embeddone = discord.Embed(
             title=
