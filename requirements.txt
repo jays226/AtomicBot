@@ -8,3 +8,4 @@ pillow
 requests
 datetime
 EpicEndpoints
+numpy
