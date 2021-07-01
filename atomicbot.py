@@ -12,6 +12,7 @@ import requests
 from discord.ext import commands
 from datetime import datetime, date
 from EpicEndpoints import EpicEndpoints
+import numpy as np
 
 website = "https://atomicxyz.tk/atomicbot/"
 tutorial = "https://youtu.be/Mo1p69GGuas"
@@ -249,16 +250,11 @@ def getClient(device_id:str,account_id:str,secret:str,message):
 
     @client.event
     async def event_party_invite(invitation):
-      # embed = discord.Embed(
-      #   title=f"This Feature is Currently Down: Party Invites",
-      #   color=color)
-      # await message.author.send(embed=embed)
-      # embed2 = discord.Embed(
-      #   title=f"Please Instead Join the Bot's Party and type: \"a!privacy private\"",
-      #   color=color)
-      # await message.author.send(embed=embed2)
-      
       print(f"Invite from {invitation.sender.display_name}\nBot Owner: {message.author.name}")
+      
+      member = client.party.me
+      cosmetics = {}
+      
       try:
         if(invitation.sender):
           embed = discord.Embed(
@@ -280,21 +276,33 @@ def getClient(device_id:str,account_id:str,secret:str,message):
             try:
               if(invitation and invitation.sender):
                 try:
+                  await member.clear_emote()
+                
+                  cosmetics['outfit'] = member.outfit
+                  cosmetics['backpack'] = member.backpack
+                  cosmetics['banner'] = member.banner
+
                   await invitation.accept()
-                except(fortnitepy.errors.HTTPException, fortnitepy.errors.Forbidden) as e:
-                  print("Error on Accept")
+                  
+                except Exception as e:
+                  print(f"Error on Accept {e}")
                   pass
+                member = client.party.me
+                await member.set_outfit(asset=cosmetics['outfit'])
+                await member.set_backpack(asset= cosmetics['backpack'])
+                await member.set_banner(icon=cosmetics['banner'][0], season_level=cosmetics['banner'][2])
                 embed = discord.Embed(
                     title=f"Accepted Invite From {invitation.sender.display_name}",
                     color=color)
+
                 msgAccept = await message.author.send(embed=embed)
                 await asyncio.sleep(5)
                 await msgAccept.delete()
                 await asyncio.sleep(1)
                 await msgEmbed.delete()
-            except:
+            except Exception as e:
               embed = discord.Embed(
-                  title=f"Error Joining Party",
+                  title=f"Error Joining Party {e}",
                   color=color)
               await message.author.send(embed=embed)
               print(crayons.red("Error Joining Party"))
@@ -312,21 +320,6 @@ def getClient(device_id:str,account_id:str,secret:str,message):
         print(crayons.red(f"Party Invite Error: {e}"))
         pass
     return client
-
-    
-
-async def edit_and_keep_client_member(self):
-  member = self.party.me
-  try:
-    await member.edit_and_keep(
-      partial(member.set_outfit, asset='CID_253_Athena_Commando_M_MilitaryFashion2'),
-      partial(member.set_banner, icon="OtherBanner28", season_level=999),
-      partial(member.set_emote, asset='EID_Floss',run_for=20),
-      partial(member.set_backpack, asset= 'BID_134_MilitaryFashion')
-    )
-  except:
-    print(crayons.red("Error Editing Styles"))
-    return
 
 loop = asyncio.get_event_loop()
 
@@ -556,7 +549,15 @@ async def on_message(message):
           }
 
           print(crayons.green(f'Bot ready as {client.user.display_name}'))
-          await edit_and_keep_client_member(client)
+          member = client.party.me
+          try:
+            await member.set_outfit(asset='CID_253_Athena_Commando_M_MilitaryFashion2')
+            await member.set_emote(asset='EID_Floss',run_for=20)
+            await member.set_backpack(asset= 'BID_134_MilitaryFashion')
+            await member.set_banner(icon="OtherBanner28", season_level=999)
+
+          except:
+            print(crayons.red("Error Editing Styles"))
           embed = discord.Embed(
             title=f"Lobby Bot Control Panel | {client.user.display_name}",
             description=f"**Bot Info**\nSend a friend request to **{client.user.display_name}** on Fortnite\nYour Bot will expire in **{expiretime} min**\nType **" + prefix + f"stop** to stop your bot\n\n{lobbybot_commands}\na!help - Sends the help message",
