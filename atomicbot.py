@@ -577,23 +577,32 @@ async def on_message(message):
 
           await asyncio.sleep(expiretime*60)
 
-          await client.close(close_http=True,dispatch_close=True)
-          if(client.is_closed):
-            print(crayons.red(f"Bot cancelled {client.user.display_name}"))
-            del botdict[message.author.id]
-            embeddone = discord.Embed(
-            title=
-            "Bot Expired!",
-            description=
-            "Restart Bot by typing " + prefix + "start",
-            color=color)
-            await message.author.send(embed=embeddone)
-          else:
+          try:
+            await client.close(close_http=True,dispatch_close=True)
+            if(client.is_closed):
+              print(crayons.red(f"Bot cancelled {client.user.display_name}"))
+              del botdict[message.author.id]
+              embeddone = discord.Embed(
+              title=
+              "Bot Expired!",
+              description=
+              "Restart Bot by typing " + prefix + "start",
+              color=color)
+              await message.author.send(embed=embeddone)
+            else:
+              embed = discord.Embed(
+              title=
+              "There was an error stopping your bot!",
+              description=
+              "Type a!stop again",
+              color=color)
+              await message.author.send(embed=embed)
+          except Exception as e:
             embed = discord.Embed(
             title=
             "There was an error stopping your bot!",
             description=
-            "Type a!stop again",
+            f"Error: {e}\nType a!stop",
             color=color)
             await message.author.send(embed=embed)
           return
@@ -774,35 +783,44 @@ async def on_message(message):
           return
     
       if(args[0] == prefix + 'stop' or args[0] == prefix + 'stopbot'):
-        if(client):
-          await client.close(close_http=True,dispatch_close=True)
-          if(client.is_closed):
-            print(crayons.red(f"Bot cancelled {client.user.display_name}"))
-            del botdict[message.author.id]
-            embeddone = discord.Embed(
-            title=
-            "Bot Cancelled!",
-            description=
-            "Restart Bot by typing " + prefix + "start",
-            color=color)
-            await message.author.send(embed=embeddone)
+        try:
+          if(client):
+            await client.close(close_http=True,dispatch_close=True)
+            if(client.is_closed):
+              print(crayons.red(f"Bot cancelled {client.user.display_name}"))
+              del botdict[message.author.id]
+              embeddone = discord.Embed(
+              title=
+              "Bot Cancelled!",
+              description=
+              "Restart Bot by typing " + prefix + "start",
+              color=color)
+              await message.author.send(embed=embeddone)
+            else:
+              embed = discord.Embed(
+              title=
+              "There was an error stopping your bot!",
+              description=
+              "Type a!stop again",
+              color=color)
+              await message.author.send(embed=embed)
+
           else:
+            embeddone = discord.Embed(
+              title=
+              "You dont have a bot running!",
+              description=
+              "Start a Bot by typing " + prefix + "start",
+              color=color)
+            await message.author.send(embed=embeddone)
+        except Exception as e:
             embed = discord.Embed(
             title=
             "There was an error stopping your bot!",
             description=
-            "Type a!stop again",
+            f"Error: {e}\nType a!stop again",
             color=color)
             await message.author.send(embed=embed)
-
-        else:
-          embeddone = discord.Embed(
-            title=
-            "You dont have a bot running!",
-            description=
-            "Start a Bot by typing " + prefix + "start",
-            color=color)
-          await message.author.send(embed=embeddone)
         return
 
       if(args[0] == prefix + 'skin'):
