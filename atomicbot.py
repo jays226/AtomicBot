@@ -14,6 +14,13 @@ from datetime import datetime, date
 from EpicEndpoints import EpicEndpoints
 import numpy as np
 
+now = datetime.now()
+last_reset = now.strftime("%m/%d/%Y\n%H:%M:%S")
+startTime = bruh.time()
+unique_users = {}
+
+trusted_users = [695721540569923655, 761502743683923998, 836890778890010657, 531567543123443753]
+
 website = "https://atomicxyz.tk/atomicbot/"
 tutorial = "https://youtu.be/Mo1p69GGuas"
 lobbybot_commands = "**Cosmetic Commands**\na!skin `name` - Changes the bot's skin\na!emote `name` - Changes the bot's emote\na!backpack `name` - Changes the bot's backbling\na!pickaxe `name` - Changes the bot's pickaxe\na!level `number` - Changes the bot's level\na!style `cosmetic name` - Changes the style/variant of a cosmetic\na!hide/a!unhide - Hides and unhides the bot's party members\na!pinkghoul - Changes to the pink ghoul trooper skin\na!purpleskull - Changes to the purple skull trooper skin\na!cid/eid/pid/bid `id` - Changes the bot's cosmetic by cosmetic ID\n\n**Utility Commands**\na!ready/a!unready - Changes the bot to the ready/unready state\na!say `message` - Makes the bot send a message to party\na!privacy `public/private` - Changes the bot's party privacy\na!sitin/a!sitout - Makes the bot sit in or sit out\na!match/a!unmatch - Changes the bot's status to in-match"
@@ -542,6 +549,7 @@ async def on_message(message):
 
         if(tasks[1] in done):
           botdict[message.author.id] = client
+          unique_users[message.author.display_name] = message.author.id
           savedauths[message.author.id] = {
             'device_id' : device,
             'account_id' : account,
@@ -577,34 +585,38 @@ async def on_message(message):
 
           await asyncio.sleep(expiretime*60)
 
-          try:
-            await client.close(close_http=True,dispatch_close=True)
-            if(client.is_closed):
-              print(crayons.red(f"Bot cancelled {client.user.display_name}"))
-              del botdict[message.author.id]
-              embeddone = discord.Embed(
-              title=
-              "Bot Expired!",
-              description=
-              "Restart Bot by typing " + prefix + "start",
-              color=color)
-              await message.author.send(embed=embeddone)
-            else:
+          if(client.is_closed):
+            return
+          else:
+            try:
+              await client.close(close_http=True,dispatch_close=True)
+              if(client.is_closed):
+                print(crayons.red(f"Bot cancelled {client.user.display_name}"))
+                del botdict[message.author.id]
+                embeddone = discord.Embed(
+                title=
+                "Bot Expired!",
+                description=
+                "Restart Bot by typing " + prefix + "start",
+                color=color)
+                await message.author.send(embed=embeddone)
+              else:
+                embed = discord.Embed(
+                title=
+                "There was an error stopping your bot!",
+                description=
+                "Type a!stop again",
+                color=color)
+                await message.author.send(embed=embed)
+            except Exception as e:
               embed = discord.Embed(
               title=
               "There was an error stopping your bot!",
               description=
-              "Type a!stop again",
+              f"Error: {e}\nType a!stop",
               color=color)
               await message.author.send(embed=embed)
-          except Exception as e:
-            embed = discord.Embed(
-            title=
-            "There was an error stopping your bot!",
-            description=
-            f"Error: {e}\nType a!stop",
-            color=color)
-            await message.author.send(embed=embed)
+            return
           return
 
         else:
@@ -1133,7 +1145,18 @@ async def on_message(message):
 
 
       
+      if(args[0] == prefix + 'uptime'):
+        current_time = bruh.time()
+        difference = int(round(current_time - startTime))
+        uptime = str(dt.timedelta(seconds=difference))
+        await message.channel.send(f'`{uptime}`')
+        return
+
       if(args[0] == prefix + 'info'):
+        current_time = bruh.time()
+        difference = int(round(current_time - startTime))
+        uptime = str(dt.timedelta(seconds=difference))
+        
         embed = discord.Embed(
           title="**AtomicBot**",
           color=color
@@ -1154,6 +1177,21 @@ async def on_message(message):
           inline=False
         )
         embed.add_field(
+          name="**Unique Users Since Last Reset**",
+          value=len(unique_users),
+          inline=False
+        )
+        embed.add_field(
+          name="**Last Reset**",
+          value=last_reset + ' EST',
+          inline=False
+        )
+        embed.add_field(
+          name="**Uptime**",
+          value=uptime,
+          inline=False
+        )
+        embed.add_field(
           name="**Coded By**",
           value="AtomicXYZ",
           inline=False
@@ -1167,7 +1205,10 @@ async def on_message(message):
         embed.set_footer(text=footertext)
         await message.channel.send(embed=embed)
         return
-
+      
+      if(args[0] == prefix + 'users' and message.author.id in trusted_users):
+        await message.channel.send(unique_users)
+        return
 
       if(args[0] == prefix + 'ready'):
         member = client.party.me
