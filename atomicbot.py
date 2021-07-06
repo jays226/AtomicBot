@@ -1185,7 +1185,7 @@ async def on_message(message):
         )
         embed.add_field(
           name="**Last Reset**",
-          value=last_reset + ' EST',
+          value=last_reset + ' UTC',
           inline=False
         )
         embed.add_field(
