@@ -10,8 +10,10 @@ import discord
 import fortnitepy
 import requests
 from discord.ext import commands
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
+import datetime as dt
 from EpicEndpoints import EpicEndpoints
+import time as bruh
 import numpy as np
 
 now = datetime.now()
