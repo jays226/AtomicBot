@@ -25,7 +25,7 @@ trusted_users = [695721540569923655, 761502743683923998, 836890778890010657, 531
 
 website = "https://atomicxyz.tk/atomicbot/"
 tutorial = "https://youtu.be/Mo1p69GGuas"
-lobbybot_commands = "**Cosmetic Commands**\na!skin `name` - Changes the bot's skin\na!emote `name` - Changes the bot's emote\na!backpack `name` - Changes the bot's backbling\na!pickaxe `name` - Changes the bot's pickaxe\na!level `number` - Changes the bot's level\na!style `cosmetic name` - Changes the style/variant of a cosmetic\na!hide/a!unhide - Hides and unhides the bot's party members\na!pinkghoul - Changes to the pink ghoul trooper skin\na!purpleskull - Changes to the purple skull trooper skin\na!cid/eid/pid/bid `id` - Changes the bot's cosmetic by cosmetic ID\n\n**Utility Commands**\na!ready/a!unready - Changes the bot to the ready/unready state\na!say `message` - Makes the bot send a message to party\na!privacy `public/private` - Changes the bot's party privacy\na!sitin/a!sitout - Makes the bot sit in or sit out\na!match/a!unmatch - Changes the bot's status to in-match"
+lobbybot_commands = "**Cosmetic Commands**\na!skin `name/id` - Changes the bot's skin\na!emote `name/id` - Changes the bot's emote\na!backpack `name/id` - Changes the bot's backbling\na!pickaxe `name/id` - Changes the bot's pickaxe\na!level `number` - Changes the bot's level\na!style `cosmetic name` - Changes the style/variant of a cosmetic\na!hide/a!unhide - Hides and unhides the bot's party members\na!pinkghoul - Changes to the pink ghoul trooper skin\na!purpleskull - Changes to the purple skull trooper skin\n\n**Utility Commands**\na!ready/a!unready - Changes the bot to the ready/unready state\na!say `message` - Makes the bot send a message to party\na!privacy `public/private` - Changes the bot's party privacy\na!sitin/a!sitout - Makes the bot sit in or sit out\na!friend `username` - Sends a friend request\na!match/a!unmatch - Changes the bot's status to in-match"
 
 # myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 
@@ -335,8 +335,8 @@ loop = asyncio.get_event_loop()
 prefix = 'a!'
 prefixs = "a!","A!"
 
-color = 0xff0000
-footertext = "AtomicBot v2.5 | By AtomicXYZ"
+color = 0xD13A3A
+footertext = "AtomicBot v2.6 BETA | By AtomicXYZ"
 
 intents = discord.Intents.default()
 
@@ -459,6 +459,8 @@ async def on_message(message):
 
     msgCont = message.content.lower()
     args = msgCont.split(" ")
+    msgUpper = message.content
+    argsU = msgUpper.split(" ")
     client = botdict.get(message.author.id, None)
     auths = savedauths.get(message.author.id, None)
     end = args[1:]
@@ -551,7 +553,7 @@ async def on_message(message):
 
         if(tasks[1] in done):
           botdict[message.author.id] = client
-          unique_users[message.author.display_name] = message.author.id
+          unique_users[message.author.id] = message.author.display_name
           savedauths[message.author.id] = {
             'device_id' : device,
             'account_id' : account,
@@ -588,10 +590,14 @@ async def on_message(message):
           await asyncio.sleep(expiretime*60)
 
           if(client.is_closed):
+            del botdict[message.author.id]
             return
           else:
             try:
-              await client.close(close_http=True,dispatch_close=True)
+              try:
+                await client.close(close_http=True,dispatch_close=True)
+              except:
+                pass
               if(client.is_closed):
                 print(crayons.red(f"Bot cancelled {client.user.display_name}"))
                 del botdict[message.author.id]
@@ -754,6 +760,11 @@ async def on_message(message):
         for i in current_list:
           print(i)
       
+      if(args[0] == 'a!kill'):
+        del botdict[message.author.id]
+        await message.author.send("Deleted Instances of the Bot")
+        return
+      
       if(args[0] == '+send_update'):
         print(command)
         botdict1 = botdict
@@ -769,7 +780,7 @@ async def on_message(message):
           await asyncio.sleep(1)
 
       if(args[0] == prefix + 'help'):
-        general_commands = f"a!search `cosmetic` - searches for a cosmetic\na!news - Shows the current battle royale news\na!stats `username` - Shows the stats of a player\na!shop - Shows the daily item shop\na!invite - Sends the invite link of the bot\na!help - Sends this message\n\n**Tutorial:** {tutorial}\n**Support Server:** https://discord.gg/qJqMaTfVK9\n**Website:** {website}"
+        general_commands = f"a!search `cosmetic` - searches for a cosmetic\na!news - Shows the current battle royale news\na!stats `username` - Shows the stats of a player\na!shop - Shows the daily item shop\na!invite - Sends the invite link of the bot\na!uptime - Sends time since the bot reset\na!help - Sends this message\n\n**Tutorial:** {tutorial}\n**Support Server:** https://discord.gg/qJqMaTfVK9\n**Website:** {website}"
         if(client):
           embed = discord.Embed(
             title=f"Help Page",
@@ -799,10 +810,13 @@ async def on_message(message):
       if(args[0] == prefix + 'stop' or args[0] == prefix + 'stopbot'):
         try:
           if(client):
-            await client.close(close_http=True,dispatch_close=True)
-            if(client.is_closed):
-              print(crayons.red(f"Bot cancelled {client.user.display_name}"))
+            try:
+              await client.close(close_http=True,dispatch_close=True)
+            except:
+              pass
+            if(client.is_closed()):
               del botdict[message.author.id]
+              print(crayons.red(f"Bot cancelled {client.user.display_name}"))
               embeddone = discord.Embed(
               title=
               "Bot Cancelled!",
@@ -840,134 +854,135 @@ async def on_message(message):
       if(args[0] == prefix + 'skin'):
         cosmetic = await fetch_cosmetic('AthenaCharacter', command)
         member = client.party.me
-        try:
-          await member.set_outfit(
-            asset=cosmetic.id,
-            variants = None
-          )
-          embed = discord.Embed(
-            title="Skin Successfully Changed to " + cosmetic.name,
-            description=cosmetic.id,
-            color=color
-          )
-          await asyncio.sleep(1)
+        if(argsU[1].startswith("CID_")):
+          print(f"Using ID for Cosmetic {argsU[1]}")
           try:
-            embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.outfit}/icon.png")
-            # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.outfit}/icon.png")
+            await member.set_outfit(
+              asset=argsU[1],
+              variants = None
+            )
+            embed = discord.Embed(
+              title="Skin Successfully Changed",
+              description=member.outfit,
+              color=color
+            )
+            await asyncio.sleep(1)
+            try:
+              embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.outfit}/icon.png")
+              # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.outfit}/icon.png")
+            except:
+              embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
+              
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+            return
           except:
-            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-           
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Invalid Skin/ID",
-            description="Make sure you type the name correctly!",
-            color=color
-          )
-           
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-      
-      if(args[0] == prefix + 'cid'):
-        member = client.party.me
-        try:
-          await member.set_outfit(
-            asset=args[1],
-            variants = None
-          )
-          embed = discord.Embed(
-            title="Skin Successfully Changed",
-            description=member.emote,
-            color=color
-          )
-          await asyncio.sleep(1)
+            embed = discord.Embed(
+              title="Error: Invalid Skin/ID",
+              description="Make sure you type the name correctly!",
+              color=color
+            )
+              
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+            return
+        else:
           try:
-            embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.outfit}/icon.png")
-            # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.outfit}/icon.png")
+            await member.set_outfit(
+              asset=cosmetic.id,
+              variants = None
+            )
+            embed = discord.Embed(
+              title="Skin Successfully Changed to " + cosmetic.name,
+              description=cosmetic.id,
+              color=color
+            )
+            await asyncio.sleep(1)
+            try:
+              embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.outfit}/icon.png")
+              # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.outfit}/icon.png")
+            except:
+              embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
+            
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+            return
           except:
-            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-           
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Invalid Skin/ID",
-            description="Make sure you type the name correctly!",
-            color=color
-          )
-           
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
+            embed = discord.Embed(
+              title="Error: Invalid Skin/ID",
+              description="Make sure you type the name correctly!",
+              color=color
+            )
+            
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+            return
+    
       
       if(args[0] == prefix + 'pickaxe'):
         cosmetic = await fetch_cosmetic('AthenaPickaxe', command)
         member = client.party.me
-        try:
-          await member.set_pickaxe(
-            asset=cosmetic.id,
-          )
-          embed = discord.Embed(
-            title="Pickaxe Successfully Changed to " + cosmetic.name,
-            description=cosmetic.id,
-            color=color
-          )
-          await asyncio.sleep(1)
+        if(argsU[1].startswith("Pickaxe_ID")):
+          print(f"Using ID for Cosmetic {argsU[1]}")
           try:
-            embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.pickaxe}/icon.png")
-            # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.pickaxe}/icon.png")
+            await member.set_pickaxe(
+              asset=argsU[1],
+            )
+            embed = discord.Embed(
+              title="Pickaxe Successfully Changed",
+              description=member.pickaxe,
+              color=color
+            )
+            await asyncio.sleep(1)
+            try:
+              embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.pickaxe}/icon.png")
+              # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.pickaxe}/icon.png")
+            except:
+              embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
+            
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+            return
           except:
-            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-           
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Invalid Pickaxe/ID",
-            description="Make sure you type the name correctly!",
-            color=color
-          )
-           
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-      
-      if(args[0] == prefix + 'pid'):
-        member = client.party.me
-        try:
-          await member.set_pickaxe(
-            asset=args[1],
-          )
-          embed = discord.Embed(
-            title="Pickaxe Successfully Changed",
-            description=member.pickaxe,
-            color=color
-          )
-          await asyncio.sleep(1)
+            embed = discord.Embed(
+              title="Error: Invalid Pickaxe/ID",
+              description="Make sure you type the name correctly!",
+              color=color
+            )
+            
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+            return
+        else:
           try:
-            embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.pickaxe}/icon.png")
-            # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.pickaxe}/icon.png")
+            await member.set_pickaxe(
+              asset=cosmetic.id,
+            )
+            embed = discord.Embed(
+              title="Pickaxe Successfully Changed to " + cosmetic.name,
+              description=cosmetic.id,
+              color=color
+            )
+            await asyncio.sleep(1)
+            try:
+              embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.pickaxe}/icon.png")
+              # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.pickaxe}/icon.png")
+            except:
+              embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
+            
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+            return
           except:
-            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-           
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Invalid Pickaxe/ID",
-            description="Make sure you type the name correctly!",
-            color=color
-          )
-           
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
+            embed = discord.Embed(
+              title="Error: Invalid Pickaxe/ID",
+              description="Make sure you type the name correctly!",
+              color=color
+            )
+            
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+            return
 
       if(args[0] == prefix + 'brnews' or args[0] == prefix + 'news'):
         today = date.today()
@@ -996,6 +1011,50 @@ async def on_message(message):
 
       if(args[0] == prefix + 'shop'):
         await send_shop(message.channel.id)
+        return
+      
+      if(args[0] == prefix + 'friend'):
+        user = await client.fetch_user_by_display_name(args[1])
+        await client.add_friend(user.id)
+        embed = discord.Embed(
+            title=f"Sent Friend Request to {user.display_name}",
+            description=f"User ID: {user.id}",
+            color=color
+          )
+        await message.author.send(embed=embed)
+        return
+      
+      if(args[0] == prefix + 'remove'):
+        user = await client.fetch_user_by_display_name(args[1])
+        for i in client.friends:
+          if(i.id == user.id):
+            await i.remove()
+            embed = discord.Embed(
+                title=f"Removed Friend: {user.display_name}",
+                color=color
+              )
+            await message.author.send(embed=embed)
+            return
+        embed = discord.Embed(
+                title="Error: Failed to find friend",
+                color=color
+              )
+        await message.author.send(embed=embed)
+        return
+
+      
+      if(args[0] == prefix + 'platform'):
+        member = client.party.me
+        party_id = client.user.party.id
+        await client.user.party.me.leave()
+        client.platform = fortnitepy.Platform.WINDOWS
+        await message.reply('Platform set to ' + str(client.platform))
+        await client.join_to_party(party_id)
+        embed = discord.Embed(
+            title=f"Set platform to {member.platform}",
+            color=color
+          )
+        await message.author.send(embed=embed)
         return
 
       if(args[0] == prefix + 'search'):
@@ -1146,7 +1205,6 @@ async def on_message(message):
         return
 
 
-      
       if(args[0] == prefix + 'uptime'):
         current_time = bruh.time()
         difference = int(round(current_time - startTime))
@@ -1209,8 +1267,9 @@ async def on_message(message):
         return
       
       if(args[0] == prefix + 'users' and message.author.id in trusted_users):
-        await message.channel.send(unique_users)
+        await message.author.send(unique_users)
         return
+
 
       if(args[0] == prefix + 'ready'):
         member = client.party.me
@@ -1232,6 +1291,37 @@ async def on_message(message):
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
+      
+      if(args[0] == prefix + 'mimic' or args[0] == prefix + 'copy'):
+        user = await client.fetch_user_by_display_name(args[1])
+        for i in client.party.members:
+          if(i.id == user.id):
+            cosmetics = {}
+            cosmetics['outfit'] = i.outfit
+            cosmetics['backpack'] = i.backpack
+            cosmetics['banner'] = i.banner
+            cosmetics['emote'] = i.emote
+            cosmetics['pickaxe'] = i.pickaxe
+            print(cosmetics)
+            member = client.party.me
+            await member.set_outfit(asset=cosmetics['outfit'])
+            await member.set_backpack(asset= cosmetics['backpack'])
+            await member.set_banner(icon=cosmetics['banner'][0], season_level=cosmetics['banner'][2])
+            await member.set_pickaxe(asset=cosmetics['pickaxe'])
+            await member.set_emote(asset=cosmetics['emote'])
+            embed = discord.Embed(
+            title=f"Copied {user.display_name}'s Cosmetics",
+            color=color
+            )
+            await message.author.send(embed=embed)
+            return
+        embed = discord.Embed(
+            title="Couldn't find user",
+            color=color
+          )
+        await message.author.send(embed=embed)
+        return
+        
       
       if(args[0] == prefix + 'match'):
         member = client.party.me
@@ -1458,7 +1548,6 @@ async def on_message(message):
         cosmetic = await fetch_cosmetic('AthenaDance', command)
         member = client.party.me
         try:
-
           if(args[1] == 'none' or args[1] == 'clear'):
             await member.clear_emote()
             embed = discord.Embed(
@@ -1468,66 +1557,66 @@ async def on_message(message):
             await message.author.send(embed=embed)
             return
           await member.clear_emote()
-          await member.set_emote(
-            asset=cosmetic.id,
-            run_for=emoteseconds
-          )
-          embed = discord.Embed(
-            title="Emote Successfully Changed to " + cosmetic.name,
-            description=cosmetic.id,
-            color=color
-          )
-          try:
-            embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.emote}/icon.png")
-            # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.emote}/icon.png")
-          except:
-            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-          
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-          
+          if(argsU[1].startswith("EID_")):
+            print(f"Using ID for Cosmetic {argsU[1]}")
+            try:
+              await member.clear_emote()
+              await member.set_emote(
+                asset=argsU[1],
+                run_for=emoteseconds
+              )
+              embed = discord.Embed(
+              title="Emote Successfully Changed",
+              description=member.emote,
+              color=color
+              )
+              try:
+                embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.emote}/icon.png")
+                # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.emote}/icon.png")
+              except:
+                embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
+              
+              embed.set_footer(text=footertext)
+              await message.author.send(embed=embed)
+              return
+              
+            except:
+              embed = discord.Embed(
+                title="Error: Invalid Emote/ID",
+                description="Make sure you type the name correctly!",
+                color=color
+              )
+              
+              embed.set_footer(text=footertext)
+              await message.author.send(embed=embed)
+              return
+          else:
+            await member.set_emote(
+              asset=cosmetic.id,
+              run_for=emoteseconds
+            )
+            embed = discord.Embed(
+              title="Emote Successfully Changed to " + cosmetic.name,
+              description=cosmetic.id,
+              color=color
+            )
+            try:
+              embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.emote}/icon.png")
+              # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.emote}/icon.png")
+            except:
+              embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
+            
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+            return
+            
         except Exception as e:
           embed = discord.Embed(
             title="Error: Invalid Emote/ID",
             description=f"Error: {e}",
             color=color
           )
-           
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-      
-      if(args[0] == prefix + 'eid'):
-        member = client.party.me
-        try:
-          await member.clear_emote()
-          await member.set_emote(
-            asset=args[1],
-            run_for=emoteseconds
-          )
-          embed = discord.Embed(
-          title="Emote Successfully Changed",
-          description=member.emote,
-          color=color
-          )
-          try:
-            embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.emote}/icon.png")
-            # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.emote}/icon.png")
-          except:
-            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-           
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
           
-        except:
-          embed = discord.Embed(
-            title="Error: Invalid Emote/ID",
-            description="Make sure you type the name correctly!",
-            color=color
-          )
-           
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1536,7 +1625,6 @@ async def on_message(message):
         cosmetic = await fetch_cosmetic('AthenaBackpack', command)
         member = client.party.me
         try:
-          
           if(args[1] == 'none' or args[1] == 'clear'):
             await member.clear_backpack()
             embed = discord.Embed(
@@ -1546,63 +1634,63 @@ async def on_message(message):
             await message.author.send(embed=embed)
             return
           
-          await member.set_backpack(
-            asset=cosmetic.id,
-            variants = None
-          )
-          embed = discord.Embed(
-            title="Backpack Successfully Changed to " + cosmetic.name,
-            description=cosmetic.id,
-            color=color
-          )
-          try:
-            embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.backpack}/icon.png")
-            # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.backpack}/icon.png")
-          except:
-            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-           
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
+          if(argsU[1].startswith("BID")):
+            print(f"Using ID for Cosmetic {argsU[1]}")
+            try:
+              await member.set_backpack(
+                asset=argsU[1],
+                variants = None
+              )
+              embed = discord.Embed(
+                title="Backpack Successfully Changed",
+                description=member.backpack,
+                color=color
+              )
+              try:
+                embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.backpack}/icon.png")
+                # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.backpack}/icon.png")
+              except:
+                embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
+              
+              embed.set_footer(text=footertext)
+              await message.author.send(embed=embed)
+              return
+            except:
+              embed = discord.Embed(
+                title="Error: Invalid Backpack",
+                description="Make sure you type the name correctly!",
+                color=color
+              )
+              
+              embed.set_footer(text=footertext)
+              await message.author.send(embed=embed)
+              return
+          else:
+            await member.set_backpack(
+              asset=cosmetic.id,
+              variants = None
+            )
+            embed = discord.Embed(
+              title="Backpack Successfully Changed to " + cosmetic.name,
+              description=cosmetic.id,
+              color=color
+            )
+            try:
+              embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.backpack}/icon.png")
+              # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.backpack}/icon.png")
+            except:
+              embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
+            
+            embed.set_footer(text=footertext)
+            await message.author.send(embed=embed)
+            return
         except:
           embed = discord.Embed(
             title="Error: Invalid Backpack",
             description="Make sure you type the name correctly!",
             color=color
           )
-           
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-      
-      if(args[0] == prefix + 'bid'):
-        member = client.party.me
-        try:
-          await member.set_backpack(
-            asset=args[1],
-            variants = None
-          )
-          embed = discord.Embed(
-            title="Backpack Successfully Changed",
-            description=member.backpack,
-            color=color
-          )
-          try:
-            embed.set_thumbnail(url=f"https://fortnite-api.com/images/cosmetics/br/{member.backpack}/icon.png")
-            # embed.set_thumbnail(url=f"https://benbot.app/cdn/images/{member.backpack}/icon.png")
-          except:
-            embed.set_thumbnail(url=f"https://static.wikia.nocookie.net/fortnite_gamepedia/images/b/bb/Fortnite-T_Placeholder_Item_Outfit.png/revision/latest/scale-to-width-down/256?cb=20200722180525")
-           
-          embed.set_footer(text=footertext)
-          await message.author.send(embed=embed)
-          return
-        except:
-          embed = discord.Embed(
-            title="Error: Invalid Backpack",
-            description="Make sure you type the name correctly!",
-            color=color
-          )
-           
+          
           embed.set_footer(text=footertext)
           await message.author.send(embed=embed)
           return
@@ -1666,6 +1754,24 @@ async def on_message(message):
           await message.author.send(embed=embed)
         return
       
+      if(args[0] == prefix + 'promote'):
+        for i in client.party.members:
+          if(i.display_name.lower() == args[1]):
+            await i.promote()
+            embed = discord.Embed(
+              title=
+              f"Promoted {i.display_name}",
+              color=color)
+            await message.author.send(embed=embed)
+            return
+        embed = discord.Embed(
+              title=
+              "Error: Unable to find user in party",
+              color=color)
+        await message.author.send(embed=embed)
+        return
+        
+
       if(args[0] == prefix + 'unhide'):
         try:
           for i in client.party.members:
