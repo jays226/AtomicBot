@@ -251,79 +251,84 @@ def getClient(device_id:str,account_id:str,secret:str,message,platform):
 
 
     @client.event
-    async def event_restart():
-      print("Client Restarted!")
-
-    @client.event
     async def event_friend_request(request): 
-      try:
-        await request.accept()
-      except:
-        print(crayons.red("Friend Request Error"))
+      client_dict = botdict.get(message.author.id, None)
+      if(client_dict):
+        try:
+          await request.accept()
+        except:
+          print(crayons.red("Friend Request Error"))
+      else:
+        await client.close(close_http=True,dispatch_close=True)
 
     @client.event
     async def event_party_invite(invitation):
-      print(f"Invite from {invitation.sender.display_name}\nBot Owner: {message.author.name}")
+      client_dict = botdict.get(message.author.id, None)
+      if(client_dict):
       
-      member = client.party.me
-      cosmetics = {}
-      
-      try:
-        if(invitation.sender):
-          embed = discord.Embed(
-              title=f"Party Invite From {invitation.sender.display_name}",
-              description="Should I Accept the Invite?",
-              color=color)
-          await asyncio.sleep(1)
-          msgEmbed = await message.author.send(embed=embed)
-          reactions = ['✅','❌']
-          for emoji in reactions: 
-            await msgEmbed.add_reaction(emoji)
-          
-          def check(reaction, user):
-            return reaction.message == msgEmbed and user == message.author
-
-          reaction = await bot.wait_for('raw_reaction_add', check=lambda reaction: reaction.message_id == msgEmbed.id and reaction.user_id == message.author.id)
-
-          if reaction.emoji.name == '✅':
-            try:
-              if(invitation and invitation.sender):
-                try:
-                  await member.clear_emote()
-
-                  await invitation.accept()
-                  
-                except Exception as e:
-                  print(f"Error on Accept {e}")
-                  pass
-                embed = discord.Embed(
-                    title=f"Accepted Invite From {invitation.sender.display_name}",
-                    color=color)
-
-                msgAccept = await message.author.send(embed=embed)
-                await asyncio.sleep(5)
-                await msgAccept.delete()
-                await asyncio.sleep(1)
-                await msgEmbed.delete()
-            except Exception as e:
-              embed = discord.Embed(
-                  title=f"Error Joining Party {e}",
-                  color=color)
-              await message.author.send(embed=embed)
-              print(crayons.red("Error Joining Party"))
-          elif reaction.emoji.name == '❌':
-            await invitation.decline()
+        print(f"Invite from {invitation.sender.display_name}\nBot Owner: {message.author.name}")
+        
+        member = client.party.me
+        cosmetics = {}
+        
+        try:
+          if(invitation.sender):
             embed = discord.Embed(
-                  title=f"Declined Invite From {invitation.sender.display_name}",
-                  color=color)
-            msgDecline = await message.author.send(embed=embed)
-            await asyncio.sleep(5)
-            await msgDecline.delete()
+                title=f"Party Invite From {invitation.sender.display_name}",
+                description="Should I Accept the Invite?",
+                color=color)
             await asyncio.sleep(1)
-            await msgEmbed.delete()
-      except Exception as e:
-        print(crayons.red(f"Party Invite Error: {e}"))
-        pass
+            msgEmbed = await message.author.send(embed=embed)
+            reactions = ['✅','❌']
+            for emoji in reactions: 
+              await msgEmbed.add_reaction(emoji)
+            
+            def check(reaction, user):
+              return reaction.message == msgEmbed and user == message.author
+
+            reaction = await bot.wait_for('raw_reaction_add', check=lambda reaction: reaction.message_id == msgEmbed.id and reaction.user_id == message.author.id)
+
+            if reaction.emoji.name == '✅':
+              try:
+                if(invitation and invitation.sender):
+                  try:
+                    await member.clear_emote()
+
+                    await invitation.accept()
+                    
+                  except Exception as e:
+                    print(f"Error on Accept {e}")
+                    pass
+                  embed = discord.Embed(
+                      title=f"Accepted Invite From {invitation.sender.display_name}",
+                      color=color)
+
+                  msgAccept = await message.author.send(embed=embed)
+                  await asyncio.sleep(5)
+                  await msgAccept.delete()
+                  await asyncio.sleep(1)
+                  await msgEmbed.delete()
+              except Exception as e:
+                embed = discord.Embed(
+                    title=f"Error Joining Party {e}",
+                    color=color)
+                await message.author.send(embed=embed)
+                print(crayons.red("Error Joining Party"))
+            elif reaction.emoji.name == '❌':
+              await invitation.decline()
+              embed = discord.Embed(
+                    title=f"Declined Invite From {invitation.sender.display_name}",
+                    color=color)
+              msgDecline = await message.author.send(embed=embed)
+              await asyncio.sleep(5)
+              await msgDecline.delete()
+              await asyncio.sleep(1)
+              await msgEmbed.delete()
+        except Exception as e:
+          print(crayons.red(f"Party Invite Error: {e}"))
+          pass
+      else:
+          await client.close(close_http=True,dispatch_close=True)
     return client
 
 loop = asyncio.get_event_loop()
@@ -332,11 +337,11 @@ prefix = 'a!'
 prefixs = "a!","A!"
 
 color = 0xD13A3A
-footertext = "AtomicBot v2.6 BETA | By AtomicXYZ"
+footertext = "AtomicBot v2.7 | By AtomicXYZ"
 
 intents = discord.Intents.default()
 
-bot = commands.Bot(command_prefix=prefixs, intents=intents)
+bot = commands.AutoShardedBot(shard_count=10, command_prefix=prefixs)
 
 bot.remove_command('help')
 
@@ -449,6 +454,8 @@ async def on_ready():
         hour = "00 02"
         await asyncio.sleep(60)
       await bot.change_presence(activity=discord.Game(name="by AtomicXYZ"))
+      await asyncio.sleep(5)
+      await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=str(len(bot.shards)) + " Shards"))
       await asyncio.sleep(5)
       await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=str(len(bot.guilds)) + " Servers"))
       await asyncio.sleep(5)
@@ -607,43 +614,53 @@ async def on_message(message):
           await asyncio.sleep(expiretime*60)
 
           client = botdict.get(message.author.id, None)
-          if(client):
-            if(client.is_closed):
-              del botdict[message.author.id]
-              return
-            else:
+          try:
+            if(client):
+              embeddone = discord.Embed(
+                title=
+                "Stopping your bot...",
+              color=color)
+              loadingmsg = await message.author.send(embed=embeddone)
               try:
-                try:
-                  await client.close(close_http=True,dispatch_close=True)
-                except:
-                  pass
-                if(client.is_closed):
-                  print(crayons.red(f"Bot cancelled {client.user.display_name}"))
-                  del botdict[message.author.id]
-                  embeddone = discord.Embed(
-                  title=
-                  "Bot Expired!",
-                  description=
-                  "Restart Bot by typing " + prefix + "start",
-                  color=color)
-                  await message.author.send(embed=embeddone)
-                else:
-                  embed = discord.Embed(
-                  title=
-                  "There was an error stopping your bot!",
-                  description=
-                  "Type a!stop again",
-                  color=color)
-                  await message.author.send(embed=embed)
-              except Exception as e:
+                await client.close(close_http=True,dispatch_close=True)
+              except:
+                pass
+              await asyncio.sleep(2)
+              if(client.is_closed()):
+                del botdict[message.author.id]
+                print(crayons.red(f"Bot cancelled {client.user.display_name}"))
+                embeddone = discord.Embed(
+                title=
+                "Bot Stopped!",
+                description=
+                "Restart Bot by typing " + prefix + "start",
+                color=color)
+                await loadingmsg.delete()
+                await message.author.send(embed=embeddone)
+              else:
                 embed = discord.Embed(
                 title=
                 "There was an error stopping your bot!",
                 description=
-                f"Error: {e}\nType a!stop",
+                "Type a!stop again",
                 color=color)
                 await message.author.send(embed=embed)
-              return
+            else:
+              embeddone = discord.Embed(
+                title=
+                "You dont have a bot running!",
+                description=
+                "Start a Bot by typing " + prefix + "start",
+                color=color)
+              await message.author.send(embed=embeddone)
+          except Exception as e:
+              embed = discord.Embed(
+              title=
+              "There was an error stopping your bot!",
+              description=
+              f"Error: {e}\nType a!stop again",
+              color=color)
+              await message.author.send(embed=embed)
           else:
             return
 
@@ -1950,41 +1967,9 @@ async def on_message(message):
     #     )
     #   await message.channel.send(embed=embed)
     #   return
-    await bot.process_commands(message)
     
 
-@bot.command()
-async def extract(ctx, path = None):
-        try:
-          if path is None:
-                  await ctx.send('smh')
-          
-          elif "/Sounds/" in path:
-                  epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
-                  with open("audio.ogg", "wb") as o:
-                          o.write(epic.content)
-                          o.close
-                  await ctx.send(file=discord.File('audio.ogg'))
-                  os.remove('audio.ogg')
-          
-          elif ".mp4" in path:
-                  epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
-                  with open("video.mp4", "wb") as o:
-                          o.write(epic.content)
-                          o.close
-                  await ctx.send(file=discord.File('video.mp4'))
-                  os.remove('video.mp4')                
-                  
 
-          else:
-                  epic = requests.get(f'https://api.gummyfn.com/export?path={path}')
-                  with open("image.png", "wb") as o:
-                          o.write(epic.content)
-                          o.close
-                  await ctx.send(file=discord.File('image.png'))
-                  os.remove('image.png')
-        except Exception as e:
-          await ctx.send(e)
 
 #TOKENS
       
