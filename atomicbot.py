@@ -341,7 +341,7 @@ footertext = "AtomicBot v2.7 | By AtomicXYZ"
 
 intents = discord.Intents.default()
 
-bot = commands.AutoShardedBot(shard_count=10, command_prefix=prefixs)
+bot = commands.AutoShardedBot(shard_count=4, command_prefix=prefixs)
 
 bot.remove_command('help')
 
