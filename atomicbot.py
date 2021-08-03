@@ -503,6 +503,7 @@ async def on_message(message):
 
         access_token = await getAccessToken()
         data = await getDeviceCode(access_token)
+        print(data)
 
         embed=discord.Embed(
         title="AtomicBot Control Panel",
