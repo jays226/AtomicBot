@@ -245,7 +245,6 @@ def getClient(device_id:str,account_id:str,secret:str,message,platform):
       secret=secret,
       ios_token=clientToken
       ),
-      status=status,
       platform=platform
     )
 
