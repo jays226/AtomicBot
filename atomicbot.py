@@ -25,7 +25,7 @@ trusted_users = [695721540569923655, 761502743683923998, 836890778890010657, 531
 
 website = "https://atomicxyz.tk/atomicbot/"
 tutorial = "https://youtu.be/Mo1p69GGuas"
-lobbybot_commands = "**Cosmetic Commands**\na!skin `name/id` - Changes the bot's skin\na!emote `name/id` - Changes the bot's emote\na!backpack `name/id` - Changes the bot's backbling\na!pickaxe `name/id` - Changes the bot's pickaxe\na!banner `name` - Changes the bot's banner\na!level `number` - Changes the bot's level\na!style `cosmetic name` - Changes the style/variant of a cosmetic\na!hide/a!unhide - Hides and unhides the bot's party members\na!pinkghoul - Changes to the pink ghoul trooper skin\na!purpleskull - Changes to the purple skull trooper skin\n\n**Party Commands**\na!ready/a!unready - Changes the bot to the ready/unready state\na!copy `epic name` - Copies the cosmetics of the user in your party\na!promote `epic name` - Promotes the user in your party\na!say `message` - Makes the bot send a message to party\na!privacy `public/private` - Changes the bot's party privacy\na!sitin/a!sitout - Makes the bot sit in or sit out\na!friend `epic name` - Sends a friend request\na!remove `epic name` - Removes friend\na!kick `epic name/all` - Kicks the user or all users from the party\na!invite `epic name` - Invites the user to the party\na!join `epic name` - Joins the user's party\na!playlist `playlist name` - Sets the playlist of the party\na!match/a!unmatch - Changes the bot's status to in-match\na!platform - Change the bot's platform"
+lobbybot_commands = "**Cosmetic Commands**\na!skin <name/id> - Changes the bot's skin\na!emote <name/id> - Changes the bot's emote\na!backpack <name/id> - Changes the bot's backbling\na!pickaxe <name/id> - Changes the bot's pickaxe\na!banner <name> - Changes the bot's banner\na!level <number> - Changes the bot's level\na!style <cosmetic name> - Changes the style/variant of a cosmetic\na!hide/a!unhide - Hides and unhides the bot's party members\na!pinkghoul - Changes to the pink ghoul trooper skin\na!purpleskull - Changes to the purple skull trooper skin\n\n**Party Commands**\na!ready/a!unready - Changes the bot to the ready/unready state\na!copy `epic name` - Copies the cosmetics of the user in your party\na!promote `epic name` - Promotes the user in your party\na!say `message` - Makes the bot send a message to party\na!privacy `public/private` - Changes the bot's party privacy\na!sitin/a!sitout - Makes the bot sit in or sit out\na!friend `epic name` - Sends a friend request\na!leave  - Leaves the party\na!remove `epic name` - Removes friend\na!kick `epic name/all` - Kicks the user or all users from the party\na!invite `epic name` - Invites the user to the party\na!join `epic name` - Joins the user's party\na!playlist `playlist name` - Sets the playlist of the party\na!match/a!unmatch - Changes the bot's status to in-match\na!platform - Change the bot's platform"
 
 # myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 
@@ -235,28 +235,54 @@ async def getIDs(access_token,account_id):
   return data
 
 
-def getClient(device_id:str,account_id:str,secret:str,message,platform):
-    acceptFriend = True
-    status = 'AtomicBot by AtomicXYZ'
-    joinMessage = ''
-    client = fortnitepy.Client(auth=fortnitepy.DeviceAuth(
-      device_id=device_id,
-      account_id=account_id,
-      secret=secret,
-      ios_token=clientToken
-      ),
-      platform=platform
-    )
+def getClient(authcode:str,message,platform):
+    try:
+      client = fortnitepy.Client(auth=fortnitepy.AdvancedAuth(
+        authorization_code=authcode
+        ),
+        platform=platform
+      )
+    except:
+      print(crayons.red("Invalid Auth Code"))
+      return
 
 
     @client.event
     async def event_friend_request(request): 
       client_dict = botdict.get(message.author.id, None)
       if(client_dict):
-        try:
+        embed = discord.Embed(
+                title=f"Friend Request from {request.display_name}",
+                description="Should I Accept the Friend Request?",
+                color=color)
+        await asyncio.sleep(1)
+        msgEmbed = await message.author.send(embed=embed)
+        reactions = ['✅','❌']
+        for emoji in reactions: 
+          await msgEmbed.add_reaction(emoji)
+        reaction = await bot.wait_for('raw_reaction_add', check=lambda reaction: reaction.message_id == msgEmbed.id and reaction.user_id == message.author.id)
+
+        if reaction.emoji.name == '✅':
           await request.accept()
-        except:
-          print(crayons.red("Friend Request Error"))
+          embed = discord.Embed(
+              title=f"Accepted Friend Request from {request.display_name}",
+              color=color)
+
+          msgAccept = await message.author.send(embed=embed)
+          await asyncio.sleep(5)
+          await msgAccept.delete()
+          await asyncio.sleep(1)
+          await msgEmbed.delete()
+        elif reaction.emoji.name == '❌':
+          await request.decline()
+          embed = discord.Embed(
+                title=f"Declined Friend Request from {request.display_name}",
+                color=color)
+          msgDecline = await message.author.send(embed=embed)
+          await asyncio.sleep(5)
+          await msgDecline.delete()
+          await asyncio.sleep(1)
+          await msgEmbed.delete()
       else:
         await client.close(close_http=True,dispatch_close=True)
 
@@ -340,7 +366,7 @@ footertext = "AtomicBot v2.7 | By AtomicXYZ"
 
 intents = discord.Intents.default()
 
-bot = commands.AutoShardedBot(shard_count=4, command_prefix=prefixs)
+bot = commands.AutoShardedBot(shard_count=10, command_prefix=prefixs)
 
 bot.remove_command('help')
 
@@ -501,54 +527,21 @@ async def on_message(message):
           await message.author.send(embed=embed)
           return
 
-        access_token = await getAccessToken()
-        data = await getDeviceCode(access_token)
-        print(data)
-
         embed=discord.Embed(
         title="AtomicBot Control Panel",
-        description=f"**•** [**Login**](https://epicgames.com) with an **ALT** Epic Games Account\n**•** [**Click Here**]({data['verification_uri_complete']}) and click **CONFIRM**\n**•** **React with** ✅ within **10 minutes**",
+        description=f"**•** [**Login**](https://epicgames.com) with an **ALT** Epic Games Account\n**•** [**Click Here**](https://www.epicgames.com/id/api/redirect?clientId=3446cd72694c4a4485d81b77adbb2141&responseType=code)\n**•** **Paste the entire contents of the website here**\n\n**•** **Type " + prefix + "cancel to cancel bot creation**",
         color=color)
          
         embed.set_footer(text=footertext)
 
         msgEmbed = await message.author.send(embed=embed)
-        reactions = ['✅','❌']
         
-        for emoji in reactions: 
-          await msgEmbed.add_reaction(emoji)
+        def check(msg):
+          return (msg.content and (len(msg.content) == 32 or len(msg.content) == 8 or len(msg.content) == 99)) and msg.author.id == message.author.id
+        msg = await bot.wait_for('message', check=check)
 
-        reaction = await bot.wait_for('raw_reaction_add', check=lambda reaction: reaction.message_id == msgEmbed.id and reaction.user_id == message.author.id)
 
-        if reaction.emoji.name == '✅':
-          try:
-            data2 = await getDeviceAuth(data['device_code'])
-            dataID = await getIDs(data2['access_token'],data2['account_id'])
-            
-            device = dataID['deviceId']
-            account = dataID['accountId']
-            secret = dataID['secret']
-
-            if(len(args) > 1):
-              platform = getPlatform(args[1])
-            else:
-              platform = getPlatform("ps5")
-
-            client = getClient(device, account, secret, message, platform)
-          except Exception as e:
-            print(f"Bot creation error: {e}")
-            await asyncio.sleep(1)
-            embed=discord.Embed(
-              title="Error: Please complete __Step 2__ and click **CONFIRM** before clicking ✅",
-              color=color)
-             
-
-            embed.set_footer(text=footertext)
-
-            msgEmbed = await message.author.send(embed=embed)
-            return
-
-        else:
+        if(msg.content.lower() == prefix + "cancel"):
           print("Bot creation cancelled")
           
           embedcancel=discord.Embed(
@@ -560,6 +553,19 @@ async def on_message(message):
 
           await msgEmbed.edit(embed=embedcancel)
           return
+
+        else:
+          print("Bot Creation Started")
+          if(len(args) > 1):
+              platform = getPlatform(args[1])
+          else:
+              platform = getPlatform("ps5")
+          if(len(msg.content) == 99):
+            auth_code = msg.content[54:86]
+          else:
+            auth_code = msg.content
+          client = getClient(auth_code,message,platform)
+          
         
         print("Bot Creation Started")
         global tasks
@@ -578,11 +584,6 @@ async def on_message(message):
         if(tasks[1] in done):
           botdict[message.author.id] = client
           unique_users[message.author.id] = message.author.display_name
-          savedauths[message.author.id] = {
-            'device_id' : device,
-            'account_id' : account,
-            'secret' : secret
-          }
 
           print(crayons.green(f'Bot ready as {client.user.display_name}'))
           member = client.party.me
@@ -1880,6 +1881,15 @@ async def on_message(message):
           return
       embed = discord.Embed(
               title="Error: Failed to find friend",
+              color=color
+            )
+      await message.author.send(embed=embed)
+      return
+    
+    if(args[0] == prefix + 'leave'):
+      await client.party.me.leave()
+      embed = discord.Embed(
+              title="Left the Party",
               color=color
             )
       await message.author.send(embed=embed)
