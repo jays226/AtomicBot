@@ -366,7 +366,7 @@ footertext = "AtomicBot v2.7 | By AtomicXYZ"
 
 intents = discord.Intents.default()
 
-bot = commands.AutoShardedBot(shard_count=10, command_prefix=prefixs)
+bot = commands.AutoShardedBot(shard_count=4, command_prefix=prefixs)
 
 bot.remove_command('help')
 
@@ -537,7 +537,7 @@ async def on_message(message):
         msgEmbed = await message.author.send(embed=embed)
         
         def check(msg):
-          return (msg.content and (len(msg.content) == 32 or len(msg.content) == 8 or len(msg.content) == 99)) and msg.author.id == message.author.id
+          return (msg.content and (len(msg.content) == 32 or len(msg.content) == 8 or len(msg.content) == 154)) and msg.author.id == message.author.id
         msg = await bot.wait_for('message', check=check)
 
 
