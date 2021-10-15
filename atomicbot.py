@@ -560,7 +560,7 @@ async def on_message(message):
               platform = getPlatform(args[1])
           else:
               platform = getPlatform("ps5")
-          if(len(msg.content) == 99):
+          if(len(msg.content) == 154):
             auth_code = msg.content[54:86]
           else:
             auth_code = msg.content
