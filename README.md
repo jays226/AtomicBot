@@ -1,4 +1,4 @@
-# atomicbot
+# AtomicBot
 
 ### More info/docs: https://github.com/AtomicXYZ/AtomicBot-discord
 
