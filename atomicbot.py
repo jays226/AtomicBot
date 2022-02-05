@@ -877,7 +877,6 @@ async def on_message(message):
             "Type a!stop again",
             color=color)
             await message.author.send(embed=embed)
-
         else:
           embeddone = discord.Embed(
             title=
@@ -894,7 +893,8 @@ async def on_message(message):
           f"Error: {e}\nType a!stop again",
           color=color)
           await message.author.send(embed=embed)
-      return
+      else:
+        return
 
     if(args[0] == prefix + 'skin'):
       cosmetic = await fetch_cosmetic('AthenaCharacter', command)
