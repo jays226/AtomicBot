@@ -72,6 +72,58 @@ lobbybot_commands = "**Cosmetic Commands**\na!skin <name/id> - Changes the bot's
 #     print("Deleted current_bots")
 
 #EPIC GAMES REQUESTS
+
+async def stopbot(message):
+  try:
+    if(client):
+      embeddone = discord.Embed(
+        title=
+        "Stopping your bot...",
+      color=color)
+      loadingmsg = await message.author.send(embed=embeddone)
+      try:
+        await client.close(close_http=True,dispatch_close=True)
+      except:
+        pass
+      await asyncio.sleep(2)
+      if(client.is_closed()):
+        del botdict[message.author.id]
+        print(crayons.red(f"Bot cancelled {client.user.display_name}"))
+        embeddone = discord.Embed(
+        title=
+        "Bot Stopped!",
+        description=
+        "Restart Bot by typing " + prefix + "start",
+        color=color)
+        await loadingmsg.delete()
+        await message.author.send(embed=embeddone)
+      else:
+        embed = discord.Embed(
+        title=
+        "There was an error stopping your bot!",
+        description=
+        "Type a!stop again",
+        color=color)
+        await message.author.send(embed=embed)
+    else:
+      embeddone = discord.Embed(
+        title=
+        "You dont have a bot running!",
+        description=
+        "Start a Bot by typing " + prefix + "start",
+        color=color)
+      await message.author.send(embed=embeddone)
+  except Exception as e:
+      embed = discord.Embed(
+      title=
+      "There was an error stopping your bot!",
+      description=
+      f"Error: {e}\nType a!stop again",
+      color=color)
+      await message.author.send(embed=embed)
+  else:
+    return
+
 async def getDisplayName(account_id):
   access_token = await getAccessToken()
 
@@ -614,56 +666,8 @@ async def on_message(message):
 
           await asyncio.sleep(expiretime*60)
 
-          client = botdict.get(message.author.id, None)
-          try:
-            if(client):
-              embeddone = discord.Embed(
-                title=
-                "Stopping your bot...",
-              color=color)
-              loadingmsg = await message.author.send(embed=embeddone)
-              try:
-                await client.close(close_http=True,dispatch_close=True)
-              except:
-                pass
-              await asyncio.sleep(2)
-              if(client.is_closed()):
-                del botdict[message.author.id]
-                print(crayons.red(f"Bot cancelled {client.user.display_name}"))
-                embeddone = discord.Embed(
-                title=
-                "Bot Stopped!",
-                description=
-                "Restart Bot by typing " + prefix + "start",
-                color=color)
-                await loadingmsg.delete()
-                await message.author.send(embed=embeddone)
-              else:
-                embed = discord.Embed(
-                title=
-                "There was an error stopping your bot!",
-                description=
-                "Type a!stop again",
-                color=color)
-                await message.author.send(embed=embed)
-            else:
-              embeddone = discord.Embed(
-                title=
-                "You dont have a bot running!",
-                description=
-                "Start a Bot by typing " + prefix + "start",
-                color=color)
-              await message.author.send(embed=embeddone)
-          except Exception as e:
-              embed = discord.Embed(
-              title=
-              "There was an error stopping your bot!",
-              description=
-              f"Error: {e}\nType a!stop again",
-              color=color)
-              await message.author.send(embed=embed)
-          else:
-            return
+          await stopbot(message=message)
+          return
 
         else:
           embed = discord.Embed(
@@ -846,55 +850,8 @@ async def on_message(message):
         return
   
     if(args[0] == prefix + 'stop' or args[0] == prefix + 'stopbot'):
-      try:
-        if(client):
-          embeddone = discord.Embed(
-            title=
-            "Stopping your bot...",
-          color=color)
-          loadingmsg = await message.author.send(embed=embeddone)
-          try:
-            await client.close(close_http=True,dispatch_close=True)
-          except:
-            pass
-          await asyncio.sleep(2)
-          if(client.is_closed()):
-            del botdict[message.author.id]
-            print(crayons.red(f"Bot cancelled {client.user.display_name}"))
-            embeddone = discord.Embed(
-            title=
-            "Bot Stopped!",
-            description=
-            "Restart Bot by typing " + prefix + "start",
-            color=color)
-            await loadingmsg.delete()
-            await message.author.send(embed=embeddone)
-          else:
-            embed = discord.Embed(
-            title=
-            "There was an error stopping your bot!",
-            description=
-            "Type a!stop again",
-            color=color)
-            await message.author.send(embed=embed)
-        else:
-          embeddone = discord.Embed(
-            title=
-            "You dont have a bot running!",
-            description=
-            "Start a Bot by typing " + prefix + "start",
-            color=color)
-          await message.author.send(embed=embeddone)
-      except Exception as e:
-          embed = discord.Embed(
-          title=
-          "There was an error stopping your bot!",
-          description=
-          f"Error: {e}\nType a!stop again",
-          color=color)
-          await message.author.send(embed=embed)
-      else:
-        return
+      await stopbot(message=message)
+      return
 
     if(args[0] == prefix + 'skin'):
       cosmetic = await fetch_cosmetic('AthenaCharacter', command)
