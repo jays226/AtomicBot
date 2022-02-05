@@ -73,56 +73,76 @@ lobbybot_commands = "**Cosmetic Commands**\na!skin <name/id> - Changes the bot's
 
 #EPIC GAMES REQUESTS
 
-async def stopbot(message):
+async def stopbot(message, event="event"):
+  client = botdict.get(message.author.id)
   try:
-    if(client):
-      embeddone = discord.Embed(
-        title=
-        "Stopping your bot...",
-      color=color)
-      loadingmsg = await message.author.send(embed=embeddone)
-      try:
-        await client.close(close_http=True,dispatch_close=True)
-      except:
-        pass
-      await asyncio.sleep(2)
-      if(client.is_closed()):
-        del botdict[message.author.id]
-        print(crayons.red(f"Bot cancelled {client.user.display_name}"))
-        embeddone = discord.Embed(
-        title=
-        "Bot Stopped!",
-        description=
-        "Restart Bot by typing " + prefix + "start",
-        color=color)
-        await loadingmsg.delete()
-        await message.author.send(embed=embeddone)
+      if event == "event":
+        if(client):
+          embeddone = discord.Embed(
+            title=
+            "Stopping your bot...",
+          color=color)
+          loadingmsg = await message.author.send(embed=embeddone)
+          try:
+            await client.close(close_http=True,dispatch_close=True)
+          except:
+            pass
+          await asyncio.sleep(2)
+          if(client.is_closed()):
+            del botdict[message.author.id]
+            print(crayons.red(f"Bot cancelled {client.user.display_name}"))
+            embeddone = discord.Embed(
+            title=
+            "Bot Stopped!",
+            description=
+            "Restart Bot by typing " + prefix + "start",
+            color=color)
+            await loadingmsg.delete()
+            await message.author.send(embed=embeddone)
+          else:
+            return
+        else:
+          return
+      elif event == "command":
+          embeddone = discord.Embed(
+            title=
+            "Stopping your bot...",
+          color=color)
+          loadingmsg = await message.author.send(embed=embeddone)
+          try:
+            await client.close(close_http=True,dispatch_close=True)
+          except:
+            pass
+          await asyncio.sleep(2)
+          if(client.is_closed()):
+            del botdict[message.author.id]
+            print(crayons.red(f"Bot cancelled {client.user.display_name}"))
+            embeddone = discord.Embed(
+            title=
+            "Bot Stopped!",
+            description=
+            "Restart Bot by typing " + prefix + "start",
+            color=color)
+            await loadingmsg.delete()
+            await message.author.send(embed=embeddone)
+          else:
+            embed = discord.Embed(
+            title=
+            "There was an error stopping your bot!",
+            description=
+            "Type a!stop again",
+            color=color)
+            await message.author.send(embed=embed)
       else:
-        embed = discord.Embed(
-        title=
-        "There was an error stopping your bot!",
-        description=
-        "Type a!stop again",
-        color=color)
-        await message.author.send(embed=embed)
-    else:
-      embeddone = discord.Embed(
-        title=
-        "You dont have a bot running!",
-        description=
-        "Start a Bot by typing " + prefix + "start",
-        color=color)
-      await message.author.send(embed=embeddone)
-  except Exception as e:
-      embed = discord.Embed(
-      title=
-      "There was an error stopping your bot!",
-      description=
-      f"Error: {e}\nType a!stop again",
-      color=color)
-      await message.author.send(embed=embed)
-  else:
-    return
+        embeddone = discord.Embed(
+          title=
+          "You dont have a bot running!",
+          description=
+          "Start a Bot by typing " + prefix + "start",
+          color=color)
+        await message.author.send(embed=embeddone)
+  except:
+    pass
 
 async def getDisplayName(account_id):
   access_token = await getAccessToken()
@@ -500,7 +520,7 @@ def getBots():
   return data
 
 emoteseconds = 60
-expiretime = 60
+expiretime = 0
 profileimg = "https://cdn.discordapp.com/avatars/829050201648922645/d8d62960d600af3975b61735ccc5e90c.png?size=128"
 
 def getPlatform(msg):
@@ -850,7 +870,10 @@ async def on_message(message):
         return
   
     if(args[0] == prefix + 'stop' or args[0] == prefix + 'stopbot'):
-      await stopbot(message=message)
+      await stopbot(
+        message=message,
+        event="command"
+      )
       return
 
     if(args[0] == prefix + 'skin'):
