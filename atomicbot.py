@@ -520,7 +520,7 @@ def getBots():
   return data
 
 emoteseconds = 60
-expiretime = 0
+expiretime = 60
 profileimg = "https://cdn.discordapp.com/avatars/829050201648922645/d8d62960d600af3975b61735ccc5e90c.png?size=128"
 
 def getPlatform(msg):
