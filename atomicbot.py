@@ -23,8 +23,8 @@ unique_users = {}
 
 trusted_users = [695721540569923655, 761502743683923998, 836890778890010657, 531567543123443753]
 
-website = "https://atomicxyz.tk/atomicbot/"
-tutorial = "https://youtu.be/Mo1p69GGuas"
+website = "https://www.youtube.com/channel/UCslvY_JW1EN1Mxcsg9E3nfA"
+tutorial = "https://youtu.be/T_Ua-_352-s"
 lobbybot_commands = "**Cosmetic Commands**\na!skin <name/id> - Changes the bot's skin\na!emote <name/id> - Changes the bot's emote\na!backpack <name/id> - Changes the bot's backbling\na!pickaxe <name/id> - Changes the bot's pickaxe\na!banner <name> - Changes the bot's banner\na!level <number> - Changes the bot's level\na!style <cosmetic name> - Changes the style/variant of a cosmetic\na!hide/a!unhide - Hides and unhides the bot's party members\na!pinkghoul - Changes to the pink ghoul trooper skin\na!purpleskull - Changes to the purple skull trooper skin\n\n**Party Commands**\na!ready/a!unready - Changes the bot to the ready/unready state\na!copy `epic name` - Copies the cosmetics of the user in your party\na!promote `epic name` - Promotes the user in your party\na!say `message` - Makes the bot send a message to party\na!privacy `public/private` - Changes the bot's party privacy\na!sitin/a!sitout - Makes the bot sit in or sit out\na!friend `epic name` - Sends a friend request\na!leave  - Leaves the party\na!remove `epic name` - Removes friend\na!kick `epic name/all` - Kicks the user or all users from the party\na!`epic name` - Invites the user to the party\na!join `epic name` - Joins the user's party\na!playlist `playlist name` - Sets the playlist of the party\na!match/a!unmatch - Changes the bot's status to in-match\na!platform - Change the bot's platform"
 
 # myclient = pymongo.MongoClient("mongodb://localhost:27017/")
