@@ -75,7 +75,9 @@ lobbybot_commands = "**Cosmetic Commands**\na!skin <name/id> - Changes the bot's
 
 async def stopbot(message, event="event"):
   client = botdict.get(message.author.id)
+  
   try:
+      del botdict[message.author.id]
       if event == "event":
         if(client):
           embeddone = discord.Embed(
@@ -89,7 +91,6 @@ async def stopbot(message, event="event"):
             pass
           await asyncio.sleep(2)
           if(client.is_closed()):
-            del botdict[message.author.id]
             print(crayons.red(f"Bot cancelled {client.user.display_name}"))
             embeddone = discord.Embed(
             title=
@@ -115,7 +116,6 @@ async def stopbot(message, event="event"):
             pass
           await asyncio.sleep(2)
           if(client.is_closed()):
-            del botdict[message.author.id]
             print(crayons.red(f"Bot cancelled {client.user.display_name}"))
             embeddone = discord.Embed(
             title=
