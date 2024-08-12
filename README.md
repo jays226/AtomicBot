@@ -9,7 +9,7 @@
 AtomicBot is a Fortnite lobby bot creation and hosting service controlled through Discord.
 
 # Usage
-1. Join the [Discord Server](https://atomicxyz.tk/discord) (or any server with `AtomicBot`)
+1. Invite the bot to a discord server
 2. Type `a!start`
 3. The bot will DM you
 4. Create an ALT Epic Games account
